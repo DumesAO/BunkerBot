@@ -1,4 +1,5 @@
 ﻿using BunkerBot;
+using System.Runtime.Intrinsics.X86;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -552,6 +553,157 @@ void SwapCards(long user1Id, long user2Id, string type)
             break;
     }
     db.SaveChanges();
+}
+
+void SwapAllUsersCards(long gameId, string type)
+{
+    BGame? game=db.Games.Find(gameId);
+    if (game == null)
+        return;
+    switch (type)
+    {
+        case "Bio":
+            {
+                List<Biology> listBio = new();
+                List<BUser> listBusers = new();
+                foreach(BUser u in game.Users)
+                {
+                    if (u.BiologyOpened)
+                    {
+                        listBio.Add(u.Biology);
+                        listBusers.Add(u);
+                    }
+                }
+                int i;
+                foreach (BUser u in listBusers)
+                {
+                    i = Random.Shared.Next(0, listBio.Count);
+                    u.Biology = (listBio[i]);
+                    listBio.RemoveAt(i);
+                }
+            }
+            break;
+        case "Hob":
+            {
+                List<Hobby> listHob = new();
+                List<BUser> listBusers = new();
+                foreach (BUser u in game.Users)
+                {
+                    if (u.HobbyOpened)
+                    {
+                        listHob.Add(u.Hobby);
+                        listBusers.Add(u);
+                    }
+                }
+                int i;
+                foreach (BUser u in listBusers)
+                {
+                    i = Random.Shared.Next(0, listHob.Count);
+                    u.Hobby = (listHob[i]);
+                    listHob.RemoveAt(i);
+                }
+            }
+            break;
+        case "Heal":
+            {
+                List<HealthCondition> listHealth = new();
+                List<BUser> listBusers = new();
+                foreach (BUser u in game.Users)
+                {
+                    if (u.HealthConditionOpened)
+                    {
+                        listHealth.Add(u.HealthCondition);
+                        listBusers.Add(u);
+                    }
+                }
+                int i;
+                foreach (BUser u in listBusers)
+                {
+                    i = Random.Shared.Next(0, listHealth.Count);
+                    u.HealthCondition = (listHealth[i]);
+                    listHealth.RemoveAt(i);
+                }
+            }
+            break;
+        case "Info":
+            {
+                List<AdditionalInfo> listInfo = new();
+                List<BUser> listBusers = new();
+                foreach (BUser u in game.Users)
+                {
+                    if (u.AdditionalInfoOpened)
+                    {
+                        listInfo.Add(u.AdditionalInfo);
+                        listBusers.Add(u);
+                    }
+                }
+                int i;
+                foreach (BUser u in listBusers)
+                {
+                    i = Random.Shared.Next(0, listInfo.Count);
+                    u.AdditionalInfo = (listInfo[i]);
+                    listInfo.RemoveAt(i);
+                }
+            }
+            break;
+        case "Lug":
+            {
+                int twoLugUser = -1;
+                List<Luggage> listLug = new();
+                List<BUser> listBusers = new();
+                foreach (BUser u in game.Users)
+                {
+                    if (u.LuggagesOpened && u.Luggages.Count > 1)
+                    {
+                        listLug.Add(u.Luggages[0]);
+                        listLug.Add(u.Luggages[1]);
+                        twoLugUser = listBusers.Count;
+                        listBusers.Add(u);
+                    }
+                    else if (u.LuggagesOpened && u.Luggages.Count == 1)
+                    {
+                        listLug.Add(u.Luggages[0]);
+                        listBusers.Add(u);
+                    }
+                    else if (!u.LuggagesOpened && u.Luggages.Count > 1)
+                    {
+                        listLug.Add(u.Luggages[1]);
+                        twoLugUser = listBusers.Count;
+                        listBusers.Add(u);
+                    }
+                }
+                int i;
+                for (int j = 0; j < listBusers.Count; j++)
+                {
+                    BUser u = listBusers[j];
+                    if (j == twoLugUser && listBusers[j].LuggagesOpened)
+                    {
+                        for (int d = 0; d < 2; d++)
+                        {
+                            i = Random.Shared.Next(0, listLug.Count);
+                            u.Luggages[d] = listLug[i];
+                            listLug.RemoveAt(i);
+                        }
+
+                    } else if(j==twoLugUser && !listBusers[j].LuggagesOpened)
+                    {
+                        i = Random.Shared.Next(0, listLug.Count);
+                        u.Luggages[1] = listLug[i];
+                        listLug.RemoveAt(i);
+                    }
+                    else
+                    {
+                        i = Random.Shared.Next(0, listLug.Count);
+                        u.Luggages[0] = listLug[i];
+                        listLug.RemoveAt(i);
+                    }
+                }
+
+            }
+            break;
+    }
+    db.SaveChanges();
+
 }
 
 
