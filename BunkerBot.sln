@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BunkerBot", "BunkerBot.csproj", "{3940735C-06F9-4559-BBDC-F1C02408BEE9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3940735C-06F9-4559-BBDC-F1C02408BEE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3940735C-06F9-4559-BBDC-F1C02408BEE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3940735C-06F9-4559-BBDC-F1C02408BEE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3940735C-06F9-4559-BBDC-F1C02408BEE9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3F9EA60B-DFCC-47B9-BA06-A393F4AF48B1}
+	EndGlobalSection
+EndGlobal
