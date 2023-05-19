@@ -140,4 +140,5 @@ public class BGame
     public virtual List<Hazard> Hazards { get; set; } = new();
     public virtual Catastrophe? Catastrophe { get; set; }
     public long GroupId{ get; set; }
+    public virtual BUser? Admin { get; set; }
 }

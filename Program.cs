@@ -1,5 +1,6 @@
 ﻿using BunkerBot;
 using System.Runtime.Intrinsics.X86;
+using System.Runtime.Serialization;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -181,14 +182,18 @@ bool JoinUser(long chatId, long userId)
                 }
             }
         }
-
+    }
+    foreach(BGame game in db.Games)
+    {
         if (game.GroupId == chatId)
         {
             var user = db.Users.FirstOrDefault(d => d.TelegramId == userId);
             if (user == null)
             {
-               user= AddUser(userId);
+                user = AddUser(userId);
             }
+            if (game.Users.Count == 0)
+                game.Admin = user;
             user.BGame = game;
             db.SaveChanges();
             return true;
@@ -356,6 +361,8 @@ BGame? GetGame(long chatId)
 {
     return db.Games.FirstOrDefault(d => d.GroupId==chatId);
 }
+
+
 
 void GiveNewCard(long userId, string type)
 {
