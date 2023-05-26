@@ -1,6 +1,4 @@
 ﻿using BunkerBot;
-using System.Runtime.Intrinsics.X86;
-using System.Runtime.Serialization;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -47,113 +45,129 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                 {
                     Message sentMessage = await botClient.SendTextMessageAsync(
                 chatId: chatId,
-                text: $"You joined a game in chat '{chatTitle}'",
+                text: $"Ти успішно приєднався до гри в чаті \"'{chatTitle}'\"",
                 cancellationToken: cancellationToken);
+                    BUser? user = GetUser(chatId);
+                    if (user != null)
+                        user.LastMessageOfBotId = sentMessage.MessageId;
                 }
                 Console.WriteLine($"Received a '{message.Text}' message in chat {chatId}.");
             }
+            switch (message.Text.Trim())
+            {
+                case "/start":
+                    {
+                        Message sentMessage = await botClient.SendTextMessageAsync(
+                            chatId: chatId,
+                            text: "Привіт. Для того щоб почати гру, додай мене в чат своїх друзів та надай права Адміністратора",
+                            cancellationToken: cancellationToken);
+                        BUser? user = GetUser(chatId);
+                        if (user != null)
+                            user.LastMessageOfBotId = sentMessage.MessageId;
+
+
+                    }
+                    break;
+                case "/leave":
+                    {
+                        if (LeaveUser(chatId))
+                        {
+                            Message sentMessage = await botClient.SendTextMessageAsync(
+                            chatId: chatId,
+                            text: "Успішно покинуто гру",
+                            cancellationToken: cancellationToken);
+                            BUser? user = GetUser(chatId);
+                            if (user != null)
+                                user.LastMessageOfBotId = sentMessage.MessageId;
+                        }
+                        else
+                        {
+                            Message sentMessage = await botClient.SendTextMessageAsync(
+                            chatId: chatId,
+                            text: "Ви зараз не знаходитесь в грі",
+                            cancellationToken: cancellationToken);
+                            BUser? user = GetUser(chatId);
+                            if (user != null)
+                                user.LastMessageOfBotId = sentMessage.MessageId;
+                        }
+                    }
+                    break;
+                default:
+                    {
+                        Message sentMessage = await botClient.SendTextMessageAsync(
+                            chatId: chatId,
+                            text: "Команду не знайдено",
+                            cancellationToken: cancellationToken);
+                        BUser? user = GetUser(chatId);
+                        if (user != null)
+                            user.LastMessageOfBotId = sentMessage.MessageId;
+                    }
+                    break;
+            }
+            db.SaveChanges();
 
         }
-        if (update.Message.Chat.Type == ChatType.Supergroup)
+
+        if (update.Message.Chat.Type == ChatType.Supergroup || update.Message.Chat.Type == ChatType.Group)
         {
             var chatId = update.Message.Chat.Id;
-            switch (message.Text)
+            switch (message.Text.Trim())
             {
                 case "/createGame":
                     {
                         CreateGame(chatId);
+                        BGame game = GetGame(chatId);
                         InlineKeyboardMarkup inlineKeyboard = new(new[]{
-                        InlineKeyboardButton.WithUrl("Join Game",$"https://t.me/{botClient.GetMeAsync().Result.Username}?start=chatId={chatId}"),
+                        InlineKeyboardButton.WithUrl("Приєднатися",$"https://t.me/{botClient.GetMeAsync().Result.Username}?start=chatId={chatId}"),
                     });
                         Message sentMessage = await botClient.SendTextMessageAsync(
                                   chatId: chatId,
-                                  text: $"Press to join",
+                                  text: $"'{message.From.Username}' почав гру",
                                   replyMarkup: inlineKeyboard,
                                   cancellationToken: cancellationToken);
+                        game.StartGameBotMessageId = sentMessage.MessageId;
+                        db.SaveChanges();
                     }
                     break;
                 case "/startGame":
                     StartGame(chatId);
-                    SendStatsToAll (GetGame(chatId).Id,botClient);
+                    SendStatsToAll(GetGame(chatId).Id, botClient);
                     break;
                 default:
                     {
                         Message sentMessage = await botClient.SendTextMessageAsync(
                                  chatId: chatId,
-                                 text: $"Wrong command",
+                                 text: $"Команду не знайдено",
                                  cancellationToken: cancellationToken);
+                    }
+                    break;
+                case "/stopGame":
+                    {
+                        if (StopGame(chatId))
+                        {
+                            Message sentMessage = await botClient.SendTextMessageAsync(
+                                 chatId: chatId,
+                                 text: $"Гру умпішно зупинено",
+                                 cancellationToken: cancellationToken);
+                        }
+                        else
+                        {
+                            Message sentMessage = await botClient.SendTextMessageAsync(
+                                 chatId: chatId,
+                                 text: $"Помилка зупинення гри",
+                                 cancellationToken: cancellationToken);
+                        }
                     }
                     break;
             }
 
 
 
-
+            db.SaveChanges();
 
         }
     }
 
-    //   if (update.Type == UpdateType.Message)
-    //   {
-    //
-    //       var messageSplited = message.Text.Split(new string[] { "chatId=" }, StringSplitOptions.None);
-    //       var chatId = message.Chat.Id;
-    //       if (messageSplited.Length > 1)
-    //       {
-    //           InlineKeyboardMarkup inlineKeyboard = new(new[]{
-    //           InlineKeyboardButton.WithCallbackData("Get Stats",$"getStats"),
-    //           });
-    //           var gameChatId = long.Parse(messageSplited[1]);
-    //           var chatTitle = botClient.GetChatAsync(gameChatId).Result.Title;
-    //           if(AddUser(gameChatId, chatId))
-    //           {
-    //               Message sentMessage = await botClient.SendTextMessageAsync(
-    //           chatId: chatId,
-    //           text: $"You joined a game in chat '{chatTitle}'",
-    //           replyMarkup: inlineKeyboard,
-    //           cancellationToken: cancellationToken);
-    //               
-    //           }
-    //           Console.WriteLine($"Received a '{message.Text}' message in chat {chatId}.");
-    //       }
-    //       else
-    //       {
-    //           InlineKeyboardMarkup inlineKeyboard = new(new[]{
-    //           InlineKeyboardButton.WithUrl("Join Game",$"https://t.me/{botClient.GetMeAsync().Result.Username}?start=chatId={chatId}"),
-    //       });
-    //           Message sentMessage = await botClient.SendTextMessageAsync(
-    //           chatId: chatId,
-    //           text: $"Press to join",
-    //           replyMarkup: inlineKeyboard,
-    //           cancellationToken: cancellationToken);
-    //           Console.WriteLine($"Received a '{message.Text}' message in chat {chatId}.");
-    //       }
-    //       
-    //
-    //
-    //       
-    //   }
-    //   if (update.Type == UpdateType.CallbackQuery)
-    //   {
-    //
-    //       var callback = update.CallbackQuery;
-    //       var chatId = callback.Message.Chat.Id;
-    //       InlineKeyboardMarkup inlineKeyboard = new(new[]
-    //{//
-     //   new []
-     //   {
-     //       InlineKeyboardButton.WithUrl("test",$"https://t.me/{botClient.GetMeAsync().Result.Username}?start=chatId={chatId}"),
-     //   }
-    //}//);
-     //       var pressedButton = callback.Data;
-     //       Message sentMessage = await botClient.SendTextMessageAsync(
-     //           chatId: chatId,
-     //           text: $"You pressed a '{pressedButton}'",
-     //           replyMarkup: inlineKeyboard,
-     //           cancellationToken: cancellationToken);
-     //       Console.WriteLine($"{pressedButton} is pressed in chat {chatId}.");
-     //   }
-     //
 }
 
 Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -183,10 +197,14 @@ bool JoinUser(long chatId, long userId)
             }
         }
     }
-    foreach(BGame game in db.Games)
+    foreach (BGame game in db.Games)
     {
         if (game.GroupId == chatId)
         {
+            if (game.Status != 0)
+            {
+                return false;
+            }
             var user = db.Users.FirstOrDefault(d => d.TelegramId == userId);
             if (user == null)
             {
@@ -201,6 +219,21 @@ bool JoinUser(long chatId, long userId)
     }
     return false;
 }
+
+bool LeaveUser(long chatId)
+{
+    BUser user = GetUser(chatId);
+    if (user == null)
+        return false;
+    if (user.BGame == null)
+        return false;
+    BGame game = user.BGame;
+    game.Users.Remove(user);
+    user.BGame = null;
+    db.SaveChanges();
+    return true;
+}
+
 
 BUser AddUser(long userId)
 {
@@ -217,24 +250,75 @@ void CreateGame(long chatId)
     db.Games.Add(game);
     db.SaveChanges();
 }
+bool StopGame(long chatId)
+{
+    BGame game = GetGame(chatId);
+    if (game == null)
+        return false;
+    foreach (BUser user in game.Users)
+    {
+        user.AdditionalInfoOpened = false;
+        user.ProfessionOpened = false;
+        user.BiologyOpened = false;
+        user.FirstSpecialCardUsed = false;
+        user.HealthConditionOpened = false;
+        user.HobbyOpened = false;
+        user.LuggagesOpened = false;
+        user.SecondSpecialCardUsed = false;
+        user.Profession = null;
+        user.Biology = null;
+        user.HealthCondition = null;
+        user.Hobby = null;
+        user.AdditionalInfo = null;
+        user.Luggages.Clear();
+        user.SpecialCards.Clear();
+    }
+    db.Games.Remove(game);
+    db.SaveChanges();
+    return true;
+}
+async void PauseGame(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = GetGame(chatId);
+    if (game == null)
+        return;
+    if (game.IsPaused)
+    {
+        game.IsPaused = false;
+        Message sentMessage = await botClient.SendTextMessageAsync(
+                                 chatId: chatId,
+                                 text: $"Гру прибрано з паузи",
+                                 cancellationToken: cancellationToken);
+    }
+    else
+    {
+        game.IsPaused = true;
+        Message sentMessage = await botClient.SendTextMessageAsync(
+                                 chatId: chatId,
+                                 text: $"Гру поставлено на паузу",
+                                 cancellationToken: cancellationToken);
+    }
+    db.SaveChanges();
 
+}
 bool StartGame(long chatId)
 {
-    BGame? game = db.Games.FirstOrDefault(d => d.GroupId == chatId);
+    BGame? game = GetGame(chatId);
     if (game == null)
     {
         return false;
     }
-    GiveStats(game.Id);
+    GiveUserStats(game.Id);
+    GiveGameStats(game.Id);
     db.SaveChanges();
     return true;
 }
-void GiveStats(int gameId)
+void GiveUserStats(int gameId)
 {
     BGame? game = db.Games.Find(gameId);
     if (game == null)
         return;
-    List<Profession> listProffesions = new (db.Professions);
+    List<Profession> listProffesions = new(db.Professions);
     List<Hobby> listHobbies = new(db.Hobbies);
     List<Luggage> listLuggages = new(db.Luggages);
     List<HealthCondition> listHealthConditions = new(db.HealthConditions);
@@ -262,9 +346,30 @@ void GiveStats(int gameId)
         user.Biology = (listBiologies[i]);
         listBiologies.RemoveAt(i);
         i = Random.Shared.Next(0, listAdditionalInfos.Count);
-        user.AdditionalInfo = (listAdditionalInfos [i]);
+        user.AdditionalInfo = (listAdditionalInfos[i]);
         listAdditionalInfos.RemoveAt(i);
     }
+}
+void GiveGameStats(int gameId)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    List<Catastrophe> catastrophes = new(db.Catastrophes);
+    List<Hazard> hazards = new(db.Hazards);
+    List<BunkerInfo> bunkerInfos = new(db.BunkerInfos);
+    int i = Random.Shared.Next(0, catastrophes.Count);
+    game.Catastrophe = catastrophes[i];
+    for (int j = 0; j < game.Users.Count; j++)
+    {
+        i = Random.Shared.Next(0, hazards.Count);
+        game.Hazards.Add(hazards[i]);
+        hazards.RemoveAt(i);
+        i = Random.Shared.Next(0, bunkerInfos.Count);
+        game.BunkerInfos.Add(bunkerInfos[i]);
+        bunkerInfos.RemoveAt(i);
+    }
+
 }
 
 void SendStatsToAll(int gameId, ITelegramBotClient botClient)
@@ -279,77 +384,79 @@ void SendStatsToAll(int gameId, ITelegramBotClient botClient)
 }
 async void SendStats(BUser user, ITelegramBotClient botClient)
 {
-    
-        string ProfMarker= ":full_moon_with_face:";
-        string BioMarker = ":full_moon_with_face:";
-        string HealthMarker = ":full_moon_with_face:";
-        string HobbyMarker = ":full_moon_with_face:";
-        string LugMarker = ":full_moon_with_face:";
-        string InfoMarker = ":full_moon_with_face:";
-        string FCardMarker= ":full_moon_with_face:";
-        string SCardMarker = ":full_moon_with_face:";
-        List<InlineKeyboardButton> keyboardButtons = new();
-        if (!user.ProfessionOpened)
-        {
-            ProfMarker = ":new_moon_with_face:";
-            keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Show Proffesion", "sProf"));
-        }
-        if (!user.BiologyOpened)
-        {
 
-            BioMarker = ":new_moon_with_face:";
-            keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Show Biology", "sBio"));
-        }
-        if (!user.HealthConditionOpened)
-        {
-            HealthMarker = ":new_moon_with_face:";
-            keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Show Health Condition", "sHealth"));
-        }
-        if (!user.HobbyOpened)
-        {
-            HobbyMarker = ":new_moon_with_face:";
-            keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Show Hobby", "sHobby"));
-        }
-        if (!user.LuggagesOpened)
-        {
-            LugMarker = ":new_moon_with_face:";
-            keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Show Luggage", "sLugg"));
-        }
-        if (!user.AdditionalInfoOpened)
-        {
-            InfoMarker = ":new_moon_with_face:";
-            keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Show Additional Info", "sInfo"));
-        }
-        if (!user.FirstSpecialCardUsed)
-        {
-            FCardMarker = ":new_moon_with_face:";
-            keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Show Special Card", "sFCard"));
-        }
-        if(user.SpecialCards.Count>1 && !user.SecondSpecialCardUsed)
-        {
-            SCardMarker = ":new_moon_with_face:";
-            keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Show ADDITIONAL Special Card", "sSCard"));
-        }
-        InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
-        long chatId = user.TelegramId;
-        string Lugtext=string.Join(" ",user.Luggages.Select(d=>d.Name));
-        string text = $"Your stats:\n " +
-                      $"'{ProfMarker}'|Proffesion: '{user.Profession!.Name}'\n" +
-                      $"'{BioMarker}'|Biology: '{user.Biology!.Name}'\n" +
-                      $"'{HealthMarker}'|Health Condition: '{user.HealthCondition!.Name}'\n" +
-                      $"'{HobbyMarker}'|Hobby:'{user.Hobby!.Name}'\n" +
-                      $"'{LugMarker}'|Luggage: '{user.Luggages[0].Name}'\n" +
-                      $"'{InfoMarker}'|Additional Info: '{user.AdditionalInfo!.Name}'\n" +
-                      $"'{FCardMarker}'|Special card: '{user.SpecialCards[0]!.Name}'\n";
-        if (user.SpecialCards.Count > 1)
-        {
-            text += $"'{SCardMarker}'|ADDITIONAL Special card: '{user.SpecialCards[1]!.Name}'";
-        }
+    string ProfMarker = ":full_moon_with_face:";
+    string BioMarker = ":full_moon_with_face:";
+    string HealthMarker = ":full_moon_with_face:";
+    string HobbyMarker = ":full_moon_with_face:";
+    string LugMarker = ":full_moon_with_face:";
+    string InfoMarker = ":full_moon_with_face:";
+    string FCardMarker = ":full_moon_with_face:";
+    string SCardMarker = ":full_moon_with_face:";
+    List<InlineKeyboardButton> keyboardButtons = new();
+    if (!user.ProfessionOpened)
+    {
+        ProfMarker = ":new_moon_with_face:";
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Розкрити професію", "sProf"));
+    }
+    if (!user.BiologyOpened)
+    {
+
+        BioMarker = ":new_moon_with_face:";
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Розкрити біологію", "sBio"));
+    }
+    if (!user.HealthConditionOpened)
+    {
+        HealthMarker = ":new_moon_with_face:";
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Розкрити стан здоров'я", "sHealth"));
+    }
+    if (!user.HobbyOpened)
+    {
+        HobbyMarker = ":new_moon_with_face:";
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Розкрити хоббі", "sHobby"));
+    }
+    if (!user.LuggagesOpened)
+    {
+        LugMarker = ":new_moon_with_face:";
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Розкрити багаж", "sLugg"));
+    }
+    if (!user.AdditionalInfoOpened)
+    {
+        InfoMarker = ":new_moon_with_face:";
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Розкрити факт", "sInfo"));
+    }
+    if (!user.FirstSpecialCardUsed)
+    {
+        FCardMarker = ":new_moon_with_face:";
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Розкрити спеціальну карту", "sFCard"));
+    }
+    if (user.SpecialCards.Count > 1 && !user.SecondSpecialCardUsed)
+    {
+        SCardMarker = ":new_moon_with_face:";
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Розкрити ДОДАТКОВУ спеціальну карту", "sSCard"));
+    }
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    long chatId = user.TelegramId;
+    string Lugtext = string.Join(" ", user.Luggages.Select(d => d.Name));
+    string text = $"Ваші характеристики:\n " +
+                  $"'{ProfMarker}'|Професія: '{user.Profession!.Name}'\n" +
+                  $"'{BioMarker}'|Біологія: '{user.Biology!.Name}'\n" +
+                  $"'{HealthMarker}'|Стан здоров'я: '{user.HealthCondition!.Name}'\n" +
+                  $"'{HobbyMarker}'|Хоббі:'{user.Hobby!.Name}'\n" +
+                  $"'{LugMarker}'|Багаж: '{user.Luggages[0].Name}'\n" +
+                  $"'{InfoMarker}'|Факт: '{user.AdditionalInfo!.Name}'\n" +
+                  $"'{FCardMarker}'|Спеціальна карта: '{user.SpecialCards[0]!.Name}'\n";
+    if (user.SpecialCards.Count > 1)
+    {
+        text += $"'{SCardMarker}'|ДОДАТКОВА спеціальна карта: '{user.SpecialCards[1]!.Name}'";
+    }
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup:inlineKeyboard,
+                  replyMarkup: inlineKeyboard,
                   text: text);
-    
+    user.LastMessageOfBotId = sentMessage.MessageId;
+    db.SaveChanges();
+
 }
 
 
@@ -359,10 +466,116 @@ BUser? GetUser(long userChatId)
 }
 BGame? GetGame(long chatId)
 {
-    return db.Games.FirstOrDefault(d => d.GroupId==chatId);
+    return db.Games.FirstOrDefault(d => d.GroupId == chatId);
 }
 
 
+async void OpenStat(BUser user, string type, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    switch (type)
+    {
+        case "Prof":
+            {
+                user.ProfessionOpened = true;
+                var userChat = await botClient.GetChatAsync(user.TelegramId);
+                Message sentMessage = await botClient.SendTextMessageAsync(
+                chatId: user.BGame.GroupId,
+                text: $"'{userChat.Username}' розкриває свою професію: '{user.Profession.Name}'",
+                cancellationToken: cancellationToken);
+                await botClient.DeleteMessageAsync(user.TelegramId, user.LastMessageOfBotId);
+                SendStats(user, botClient);
+
+            }
+            break;
+        case "Bio":
+            {
+                user.BiologyOpened = true;
+                var userChat = await botClient.GetChatAsync(user.TelegramId);
+                Message sentMessage = await botClient.SendTextMessageAsync(
+                chatId: user.BGame.GroupId,
+                text: $"'{userChat.Username}' розкриває свою біологію: '{user.Biology.Name}'",
+                cancellationToken: cancellationToken);
+                await botClient.DeleteMessageAsync(user.TelegramId, user.LastMessageOfBotId);
+                SendStats(user, botClient);
+            }
+            break;
+        case "Hob":
+            {
+                user.HobbyOpened = true;
+                var userChat = await botClient.GetChatAsync(user.TelegramId);
+                Message sentMessage = await botClient.SendTextMessageAsync(
+                chatId: user.BGame.GroupId,
+                text: $"'{userChat.Username}' розкриває своє хоббі: '{user.Hobby.Name}'",
+                cancellationToken: cancellationToken);
+                await botClient.DeleteMessageAsync(user.TelegramId, user.LastMessageOfBotId);
+                SendStats(user, botClient);
+            }
+            break;
+        case "Heal":
+            {
+                user.HealthConditionOpened = true;
+                var userChat = await botClient.GetChatAsync(user.TelegramId);
+                Message sentMessage = await botClient.SendTextMessageAsync(
+                chatId: user.BGame.GroupId,
+                text: $"'{userChat.Username}' розкриває свій стан здоров'я: '{user.HealthCondition.Name}'",
+                cancellationToken: cancellationToken);
+                await botClient.DeleteMessageAsync(user.TelegramId, user.LastMessageOfBotId);
+                SendStats(user, botClient);
+            }
+            break;
+        case "Info":
+            {
+                user.AdditionalInfoOpened = true;
+                var userChat = await botClient.GetChatAsync(user.TelegramId);
+                Message sentMessage = await botClient.SendTextMessageAsync(
+                chatId: user.BGame.GroupId,
+                text: $"'{userChat.Username}' розкриває факт про себе: '{user.AdditionalInfo.Name}'",
+                cancellationToken: cancellationToken);
+                await botClient.DeleteMessageAsync(user.TelegramId, user.LastMessageOfBotId);
+                SendStats(user, botClient);
+            }
+            break;
+        case "Lug":
+            {
+                user.LuggagesOpened = true;
+                var userChat = await botClient.GetChatAsync(user.TelegramId);
+                Message sentMessage = await botClient.SendTextMessageAsync(
+                chatId: user.BGame.GroupId,
+                text: $"'{userChat.Username}' розкриває своій багаж: '{user.Luggages[0].Name}'",
+                cancellationToken: cancellationToken);
+                await botClient.DeleteMessageAsync(user.TelegramId, user.LastMessageOfBotId);
+                SendStats(user, botClient);
+            }
+            break;
+        case "Card1":
+            {
+                user.FirstSpecialCardUsed = true;
+                var userChat = await botClient.GetChatAsync(user.TelegramId);
+                Message sentMessage = await botClient.SendTextMessageAsync(
+                chatId: user.BGame.GroupId,
+                text: $"'{userChat.Username}' розкриває свою спеціальну карту: '{user.SpecialCards[0].Name}'",
+                cancellationToken: cancellationToken);
+                await botClient.DeleteMessageAsync(user.TelegramId, user.LastMessageOfBotId);
+                SendStats(user, botClient);
+                PauseGame(user.BGame.GroupId, botClient, cancellationToken);
+            }
+            break;
+        case "Card2":
+            {
+                user.SecondSpecialCardUsed = true;
+                var userChat = await botClient.GetChatAsync(user.TelegramId);
+                Message sentMessage = await botClient.SendTextMessageAsync(
+                chatId: user.BGame.GroupId,
+                text: $"'{userChat.Username}' розкриває свою ДОДАТКОВУ спеціальну карту: '{user.SpecialCards[1].Name}'",
+                cancellationToken: cancellationToken);
+                await botClient.DeleteMessageAsync(user.TelegramId, user.LastMessageOfBotId);
+                SendStats(user, botClient);
+                PauseGame(user.BGame.GroupId, botClient, cancellationToken);
+            }
+            break;
+
+    }
+}
 
 void GiveNewCard(long userId, string type)
 {
@@ -372,18 +585,18 @@ void GiveNewCard(long userId, string type)
     List<HealthCondition> listHealthConditions = new(db.HealthConditions);
     List<Biology> listBiologies = new(db.Biologies);
     List<AdditionalInfo> listAdditionalInfos = new(db.AdditionalInfo);
-    List<SpecialCard> listSpecialCards=new(db.SpecialCards);
+    List<SpecialCard> listSpecialCards = new(db.SpecialCards);
     BUser? user = db.Users.Find(userId);
     if (user == null)
         return;
-    
-        
+
+
     switch (type)
     {
         case "Prof":
             {
                 bool uni = false;
-                int i=-1;
+                int i = -1;
                 while (!uni)
                 {
                     uni = true;
@@ -397,7 +610,7 @@ void GiveNewCard(long userId, string type)
                     }
                 }
                 user.Profession = listProffesions[i];
-                
+
             }
             break;
         case "Bio":
@@ -486,7 +699,7 @@ void GiveNewCard(long userId, string type)
                     i = Random.Shared.Next(0, listLuggages.Count);
                     foreach (BUser u in user.BGame.Users)
                     {
-                        foreach(Luggage l in u.Luggages)
+                        foreach (Luggage l in u.Luggages)
                         {
                             if (l == listLuggages[i])
                             {
@@ -499,7 +712,7 @@ void GiveNewCard(long userId, string type)
             }
             break;
         case "Card":
-             {
+            {
                 bool uni = false;
                 int i = -1;
                 while (!uni)
@@ -524,12 +737,11 @@ void GiveNewCard(long userId, string type)
     db.SaveChanges();
 
 }
-
 void SwapCards(long user1Id, long user2Id, string type)
 {
     BUser? user1 = db.Users.Find(user1Id);
     BUser? user2 = db.Users.Find(user2Id);
-    if (user1 != null ||user2==null)
+    if (user1 != null || user2 == null)
         return;
     switch (type)
     {
@@ -561,10 +773,9 @@ void SwapCards(long user1Id, long user2Id, string type)
     }
     db.SaveChanges();
 }
-
 void SwapAllUsersCards(long gameId, string type)
 {
-    BGame? game=db.Games.Find(gameId);
+    BGame? game = db.Games.Find(gameId);
     if (game == null)
         return;
     switch (type)
@@ -573,7 +784,7 @@ void SwapAllUsersCards(long gameId, string type)
             {
                 List<Biology> listBio = new();
                 List<BUser> listBusers = new();
-                foreach(BUser u in game.Users)
+                foreach (BUser u in game.Users)
                 {
                     if (u.BiologyOpened)
                     {
@@ -692,7 +903,8 @@ void SwapAllUsersCards(long gameId, string type)
                             listLug.RemoveAt(i);
                         }
 
-                    } else if(j==twoLugUser && !listBusers[j].LuggagesOpened)
+                    }
+                    else if (j == twoLugUser && !listBusers[j].LuggagesOpened)
                     {
                         i = Random.Shared.Next(0, listLug.Count);
                         u.Luggages[1] = listLug[i];
@@ -712,5 +924,7 @@ void SwapAllUsersCards(long gameId, string type)
     db.SaveChanges();
 
 }
+
+
 
 
