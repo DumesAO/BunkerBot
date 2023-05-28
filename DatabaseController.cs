@@ -97,7 +97,7 @@ public class BUser
     public virtual AdditionalInfo? AdditionalInfo { get; set; }
     public virtual List<SpecialCard> SpecialCards { get; set; } = new();
     public virtual BGame? BGame { get; set; }
-    public virtual int LastMessageOfBotId { get; set; }
+    public virtual int MenuMessageId { get; set; }
     public virtual BUser? VotedFor { get; set; }
 
     public bool FirstSpecialCardUsed { get; set; } = false;

@@ -1,10 +1,12 @@
 ﻿using BunkerBot;
+using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using static System.Net.Mime.MediaTypeNames;
 
 var db = new AppDbContext();
 db.Database.EnsureCreated();
@@ -48,63 +50,56 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                 text: $"Ти успішно приєднався до гри в чаті \"'{chatTitle}'\"",
                 cancellationToken: cancellationToken);
                     BUser? user = GetUser(chatId);
-                    if (user != null)
-                        user.LastMessageOfBotId = sentMessage.MessageId;
                 }
                 Console.WriteLine($"Received a '{message.Text}' message in chat {chatId}.");
             }
-            switch (message.Text.Trim())
+            else
             {
-                case "/start":
-                    {
-                        Message sentMessage = await botClient.SendTextMessageAsync(
-                            chatId: chatId,
-                            text: "Привіт. Для того щоб почати гру, додай мене в чат своїх друзів та надай права Адміністратора",
-                            cancellationToken: cancellationToken);
-                        BUser? user = GetUser(chatId);
-                        if (user != null)
-                            user.LastMessageOfBotId = sentMessage.MessageId;
-
-
-                    }
-                    break;
-                case "/leave":
-                    {
-                        if (LeaveUser(chatId))
+                switch (message.Text.Trim())
+                {
+                    case "/start":
                         {
                             Message sentMessage = await botClient.SendTextMessageAsync(
-                            chatId: chatId,
-                            text: "Успішно покинуто гру",
-                            cancellationToken: cancellationToken);
+                                chatId: chatId,
+                                text: "Привіт. Для того щоб почати гру, додай мене в чат своїх друзів та надай права Адміністратора",
+                                cancellationToken: cancellationToken);
                             BUser? user = GetUser(chatId);
-                            if (user != null)
-                                user.LastMessageOfBotId = sentMessage.MessageId;
+
+
                         }
-                        else
+                        break;
+                    case "/leave":
+                        {
+                            if (LeaveUser(chatId))
+                            {
+                                Message sentMessage = await botClient.SendTextMessageAsync(
+                                chatId: chatId,
+                                text: "Успішно покинуто гру",
+                                cancellationToken: cancellationToken);
+                                BUser? user = GetUser(chatId);
+                            }
+                            else
+                            {
+                                Message sentMessage = await botClient.SendTextMessageAsync(
+                                chatId: chatId,
+                                text: "Ви зараз не знаходитесь в грі",
+                                cancellationToken: cancellationToken);
+                                BUser? user = GetUser(chatId);
+                            }
+                        }
+                        break;
+                    default:
                         {
                             Message sentMessage = await botClient.SendTextMessageAsync(
-                            chatId: chatId,
-                            text: "Ви зараз не знаходитесь в грі",
-                            cancellationToken: cancellationToken);
+                                chatId: chatId,
+                                text: "Команду не знайдено",
+                                cancellationToken: cancellationToken);
                             BUser? user = GetUser(chatId);
-                            if (user != null)
-                                user.LastMessageOfBotId = sentMessage.MessageId;
                         }
-                    }
-                    break;
-                default:
-                    {
-                        Message sentMessage = await botClient.SendTextMessageAsync(
-                            chatId: chatId,
-                            text: "Команду не знайдено",
-                            cancellationToken: cancellationToken);
-                        BUser? user = GetUser(chatId);
-                        if (user != null)
-                            user.LastMessageOfBotId = sentMessage.MessageId;
-                    }
-                    break;
+                        break;
+                }
+                db.SaveChanges();
             }
-            db.SaveChanges();
 
         }
 
@@ -115,48 +110,19 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
             {
                 case "/createGame":
                     {
-                        CreateGame(chatId);
-                        BGame game = GetGame(chatId);
-                        InlineKeyboardMarkup inlineKeyboard = new(new[]{
-                        InlineKeyboardButton.WithUrl("Приєднатися",$"https://t.me/{botClient.GetMeAsync().Result.Username}?start=chatId={chatId}"),
-                    });
-                        Message sentMessage = await botClient.SendTextMessageAsync(
-                                  chatId: chatId,
-                                  text: $"'{message.From.Username}' почав гру",
-                                  replyMarkup: inlineKeyboard,
-                                  cancellationToken: cancellationToken);
-                        game.StartGameBotMessageId = sentMessage.MessageId;
-                        db.SaveChanges();
+                        CreateGame(chatId, botClient, cancellationToken, message);
                     }
                     break;
                 case "/startGame":
-                    StartGame(chatId);
-                    SendStatsToAll(GetGame(chatId).Id, botClient);
+                    {
+                        StartGame(chatId,botClient,cancellationToken);
+                    }
                     break;
                 default:
-                    {
-                        Message sentMessage = await botClient.SendTextMessageAsync(
-                                 chatId: chatId,
-                                 text: $"Команду не знайдено",
-                                 cancellationToken: cancellationToken);
-                    }
                     break;
                 case "/stopGame":
                     {
-                        if (StopGame(chatId))
-                        {
-                            Message sentMessage = await botClient.SendTextMessageAsync(
-                                 chatId: chatId,
-                                 text: $"Гру умпішно зупинено",
-                                 cancellationToken: cancellationToken);
-                        }
-                        else
-                        {
-                            Message sentMessage = await botClient.SendTextMessageAsync(
-                                 chatId: chatId,
-                                 text: $"Помилка зупинення гри",
-                                 cancellationToken: cancellationToken);
-                        }
+                        StopGame(chatId,botClient,cancellationToken);
                     }
                     break;
             }
@@ -243,18 +209,45 @@ BUser AddUser(long userId)
     db.SaveChanges();
     return user;
 }
-void CreateGame(long chatId)
+async void CreateGame(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken, Message message)
 {
+    BGame existingGame = GetGame(chatId);
+    if (existingGame != null)
+    {
+        Message sent1Message = await botClient.SendTextMessageAsync(
+                                 chatId: chatId,
+                                 text: $"В даному чаті вже є гра в процесі",
+                                 cancellationToken: cancellationToken);
+        return;
+    }
     BGame game = new BGame();
     game.GroupId = chatId;
     db.Games.Add(game);
     db.SaveChanges();
+
+    InlineKeyboardMarkup inlineKeyboard = new(new[]{
+                        InlineKeyboardButton.WithUrl("Приєднатися",$"https://t.me/{botClient.GetMeAsync().Result.Username}?start=chatId={chatId}"),
+                    });
+    Message sentMessage = await botClient.SendTextMessageAsync(
+              chatId: chatId,
+              text: $"'{message.From.Username}' почав гру",
+              replyMarkup: inlineKeyboard,
+              cancellationToken: cancellationToken);
+    game.StartGameBotMessageId = sentMessage.MessageId;
+    db.SaveChanges();
 }
-bool StopGame(long chatId)
+async void StopGame(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     BGame game = GetGame(chatId);
     if (game == null)
-        return false;
+    {
+        Message sMessage = await botClient.SendTextMessageAsync(
+                                 chatId: chatId,
+                                 text: $"В даному чаті створену гру не знайдено",
+                                 cancellationToken: cancellationToken);
+        return;
+    }
+
     foreach (BUser user in game.Users)
     {
         user.AdditionalInfoOpened = false;
@@ -275,7 +268,10 @@ bool StopGame(long chatId)
     }
     db.Games.Remove(game);
     db.SaveChanges();
-    return true;
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                                 chatId: chatId,
+                                 text: $"Гру умпішно зупинено",
+                                 cancellationToken: cancellationToken);
 }
 async void PauseGame(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
@@ -284,10 +280,9 @@ async void PauseGame(long chatId, ITelegramBotClient botClient, CancellationToke
         return;
     if (game.IsPaused)
     {
-        game.IsPaused = false;
         Message sentMessage = await botClient.SendTextMessageAsync(
                                  chatId: chatId,
-                                 text: $"Гру прибрано з паузи",
+                                 text: $"Гра вже на паузі",
                                  cancellationToken: cancellationToken);
     }
     else
@@ -301,17 +296,44 @@ async void PauseGame(long chatId, ITelegramBotClient botClient, CancellationToke
     db.SaveChanges();
 
 }
-bool StartGame(long chatId)
+async void UnpauseGame(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = GetGame(chatId);
+    if (game == null)
+        return;
+    if (!game.IsPaused)
+    {
+        Message sentMessage = await botClient.SendTextMessageAsync(
+                                 chatId: chatId,
+                                 text: $"Гра не на паузі",
+                                 cancellationToken: cancellationToken);
+    }
+    else
+    {
+        game.IsPaused = false;
+        Message sentMessage = await botClient.SendTextMessageAsync(
+                                 chatId: chatId,
+                                 text: $"Гру прибрано з паузи",
+                                 cancellationToken: cancellationToken);
+    }
+    db.SaveChanges();
+
+}
+async void StartGame(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     BGame? game = GetGame(chatId);
     if (game == null)
     {
-        return false;
+        Message sMessage = await botClient.SendTextMessageAsync(
+                                 chatId: chatId,
+                                 text: $"В даному чаті створену гру не знайдено",
+                                 cancellationToken: cancellationToken);
+        return;
     }
     GiveUserStats(game.Id);
     GiveGameStats(game.Id);
     db.SaveChanges();
-    return true;
+    SendStatsToAll(game.Id, botClient);
 }
 void GiveUserStats(int gameId)
 {
@@ -435,6 +457,10 @@ async void SendStats(BUser user, ITelegramBotClient botClient)
         SCardMarker = ":new_moon_with_face:";
         keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Розкрити ДОДАТКОВУ спеціальну карту", "sSCard"));
     }
+    if (user.BGame.Admin == user)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Меню Адміністратора", "adminMenu"));
+    }
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     long chatId = user.TelegramId;
     string Lugtext = string.Join(" ", user.Luggages.Select(d => d.Name));
@@ -454,7 +480,7 @@ async void SendStats(BUser user, ITelegramBotClient botClient)
                   chatId: chatId,
                   replyMarkup: inlineKeyboard,
                   text: text);
-    user.LastMessageOfBotId = sentMessage.MessageId;
+    user.MenuMessageId = sentMessage.MessageId;
     db.SaveChanges();
 
 }
@@ -730,7 +756,7 @@ void GiveNewCard(long userId, string type)
                         }
                     }
                 }
-                user.SpecialCards[1] = listSpecialCards[i];
+                user.SpecialCards.Add(listSpecialCards[i]);
             }
             break;
     }
@@ -925,6 +951,32 @@ void SwapAllUsersCards(long gameId, string type)
 
 }
 
+void GiveLuggage(long user1Id, long user2Id)
+{
+    BUser user1 = GetUser(user1Id);
+    BUser user2 = GetUser(user2Id);
+    user1.Luggages.Add(user2.Luggages[0]);
+    user2.Luggages.Clear();
+    db.SaveChanges();
+}
 
-
+async void SendAdminMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    var chatId = user.TelegramId;
+    await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
+    InlineKeyboardMarkup inlineKeyboard = new(new[]{
+                        InlineKeyboardButton.WithCallbackData("Змінити Характеристику", "newCardMenu"),
+                        InlineKeyboardButton.WithCallbackData("Обміняти Характеристики", "swapCardMenu"),
+                        InlineKeyboardButton.WithCallbackData("Перемішати серед усіх Характеристики", "shuffleCardMenu"),
+                        InlineKeyboardButton.WithCallbackData("Вкрасти багаж", "stealLuggageMenu"),
+                        InlineKeyboardButton.WithCallbackData("Змінити Характеристику Бункера", "bunkerCardMenu"),
+                        InlineKeyboardButton.WithCallbackData("Передати роль ведучого", "adminGiveMenu"),
+                        InlineKeyboardButton.WithCallbackData("ГОЛОВНЕ МЕНЮ", "mainMenu")
+                    });
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: chatId,
+                  replyMarkup: inlineKeyboard,
+                  text: "Меню Ведучого");
+    user.MenuMessageId=sentMessage.MessageId;
+}
 
