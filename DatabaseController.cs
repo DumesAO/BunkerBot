@@ -89,6 +89,7 @@ public class BUser
 {
     public int Id { get; set; }
     public long TelegramId { get; set; }
+    public string Name { get; set; }
     public virtual Profession? Profession { get; set; }
     public virtual List<Luggage> Luggages { get; set; } = new();
     public virtual Hobby? Hobby { get; set; }

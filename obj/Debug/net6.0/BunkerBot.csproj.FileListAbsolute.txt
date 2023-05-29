@@ -85,3 +85,11 @@ D:\kpi\8s\dip\bot\BunkerBot\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Proxi
 D:\kpi\8s\dip\bot\BunkerBot\bin\Debug\net6.0\System.Diagnostics.EventLog.dll
 D:\kpi\8s\dip\bot\BunkerBot\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Diagnostics.EventLog.Messages.dll
 D:\kpi\8s\dip\bot\BunkerBot\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Diagnostics.EventLog.dll
+D:\kpi\8s\dip\rep\BunkerBot\obj\Debug\net6.0\BunkerBot.csproj.AssemblyReference.cache
+D:\kpi\8s\dip\rep\BunkerBot\obj\Debug\net6.0\BunkerBot.GeneratedMSBuildEditorConfig.editorconfig
+D:\kpi\8s\dip\rep\BunkerBot\obj\Debug\net6.0\BunkerBot.AssemblyInfoInputs.cache
+D:\kpi\8s\dip\rep\BunkerBot\obj\Debug\net6.0\BunkerBot.AssemblyInfo.cs
+D:\kpi\8s\dip\rep\BunkerBot\obj\Debug\net6.0\BunkerBot.csproj.CoreCompileInputs.cache
+D:\kpi\8s\dip\rep\BunkerBot\obj\Debug\net6.0\BunkerBot.dll
+D:\kpi\8s\dip\rep\BunkerBot\obj\Debug\net6.0\refint\BunkerBot.dll
+D:\kpi\8s\dip\rep\BunkerBot\obj\Debug\net6.0\BunkerBot.pdb
