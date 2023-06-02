@@ -1187,3 +1187,34 @@ async void StealLuggage2AdminMenu(BUser admin, BUser stealer, ITelegramBotClient
                   text: $"'{stealer.Name}'| Оберіть ціль крадіжки");
     admin.MenuMessageId = sentMessage.MessageId;
 }
+
+async void BunkerCardAdminMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    var chatId = user.TelegramId;
+    await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
+    List<InlineKeyboardButton> keyboardButtons = new();
+    for (int i = 0; i < user.BGame.Status; i++)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{user.BGame.BunkerInfos[i].Name}'", $"'{user.Id}'.'{i}'_BunkerCard2Menu"));
+    }
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: chatId,
+                  replyMarkup: inlineKeyboard,
+                  text: $"Оберіть характеристику бункера");
+    user.MenuMessageId = sentMessage.MessageId;
+}
+async void BunkerCard2AdminMenu(BUser user, int cardNumber, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    var chatId = user.TelegramId;
+    await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
+    List<InlineKeyboardButton> keyboardButtons = new();
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Замінити на нову", $"'{user.Id}'.'{cardNumber}_newBunkerCard"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Скинути", $"'{user.Id}'.'{cardNumber}_removeBunkerCard"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: chatId,
+                  replyMarkup: inlineKeyboard,
+                  text: $"\"'{user.BGame.BunkerInfos[cardNumber].Name}'\"\n Що зробити з картою?");
+    user.MenuMessageId = sentMessage.MessageId;
+}

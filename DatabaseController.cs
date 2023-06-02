@@ -143,6 +143,7 @@ public class BGame
     public bool IsPaused { get; set; } = false;
     public virtual VotingList VotingList{get;set;}
     public int Status { get; set; } = 0;
+    public int RoundPart { get; set; } = 0;
 }
 
 public class VotingList
