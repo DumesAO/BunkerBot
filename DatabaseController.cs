@@ -99,6 +99,8 @@ public class BUser
     public virtual List<SpecialCard> SpecialCards { get; set; } = new();
     public virtual BGame? BGame { get; set; }
     public virtual int MenuMessageId { get; set; }
+    public virtual int VoteMessageId { get; set; }
+    public bool IsVoteDoubled { get; set; } = false;
     public virtual BUser? VotedFor { get; set; }
 
     public bool FirstSpecialCardUsed { get; set; } = false;
@@ -144,6 +146,8 @@ public class BGame
     public virtual VotingList VotingList{get;set;}
     public int Status { get; set; } = 0;
     public int RoundPart { get; set; } = 0;
+    public long SpeakerId { get; set; }=0;
+    public virtual int SpeakingUserTime { get; set; }
 }
 
 public class VotingList
