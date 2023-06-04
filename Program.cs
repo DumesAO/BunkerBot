@@ -1,6 +1,5 @@
 ﻿using BunkerBot;
 using System.Text.RegularExpressions;
-using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -184,6 +183,7 @@ async Task<bool> JoinUser(long chatId, long userId)
                 game.Admin = user;
             user.BGame = game;
             db.SaveChanges();
+            UpdateGameMembersList(game.GroupId);
             return true;
         }
     }
@@ -200,10 +200,25 @@ bool LeaveUser(long chatId)
     BGame game = user.BGame;
     game.Users.Remove(user);
     user.BGame = null;
+    UpdateGameMembersList(game.GroupId);
     db.SaveChanges();
     return true;
 }
 
+async void UpdateGameMembersList(long chatId)
+{
+    BGame game = GetGame(chatId);
+    if (game == null)
+        return;
+    string text = "Приєдналися:\n";
+    for (int i = 0; i < game.Users.Count - 1; i++)
+    {
+        text += $"'{game.Users[i].Name}', ";
+    }
+    text += $"'{game.Users.Last().Name}'";
+
+    Message message = await botClient.EditMessageTextAsync(chatId, game.StartGameBotMessageId, text);
+}
 async Task<BUser> AddUser(long userId)
 {
     BUser user = new BUser();
@@ -219,7 +234,7 @@ async void CreateGame(long chatId, ITelegramBotClient botClient, CancellationTok
     BGame existingGame = GetGame(chatId);
     if (existingGame != null)
     {
-        Message sent1Message = await botClient.SendTextMessageAsync(
+        Message sentMessage = await botClient.SendTextMessageAsync(
                                  chatId: chatId,
                                  text: $"В даному чаті вже є гра в процесі",
                                  cancellationToken: cancellationToken);
@@ -233,12 +248,16 @@ async void CreateGame(long chatId, ITelegramBotClient botClient, CancellationTok
     InlineKeyboardMarkup inlineKeyboard = new(new[]{
                         InlineKeyboardButton.WithUrl("Приєднатися",$"https://t.me/{botClient.GetMeAsync().Result.Username}?start=chatId={chatId}"),
                     });
-    Message sentMessage = await botClient.SendTextMessageAsync(
+    Message sent1Message = await botClient.SendTextMessageAsync(
               chatId: chatId,
-              text: $"'{message.From.FirstName}' '{message.From.LastName}' почав гру",
+              text: $"'{message.From.FirstName}' '{message.From.LastName}' створив гру",
               replyMarkup: inlineKeyboard,
               cancellationToken: cancellationToken);
-    game.StartGameBotMessageId = sentMessage.MessageId;
+    Message sent2Message = await botClient.SendTextMessageAsync(
+              chatId: chatId,
+              text: $"Приєдналися:",
+              cancellationToken: cancellationToken);
+    game.StartGameBotMessageId = sent2Message.MessageId;
     db.SaveChanges();
 }
 async void StopGame(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
@@ -270,9 +289,9 @@ async void StopGame(long chatId, ITelegramBotClient botClient, CancellationToken
         user.AdditionalInfo = null;
         user.Luggages.Clear();
         user.SpecialCards.Clear();
-        user.IsVoteDoubled= false;
+        user.IsVoteDoubled = false;
         user.MenuMessageId = 0;
-        user.VoteMessageId= 0;
+        user.VoteMessageId = 0;
         user.VotedFor = null;
     }
     db.Games.Remove(game);
@@ -290,7 +309,7 @@ async void PauseGame(long chatId, ITelegramBotClient botClient, CancellationToke
     if (game.IsPaused)
     {
         Message sentMessage = await botClient.SendTextMessageAsync(
-                                 chatId: chatId,
+                                 chatId: game.Admin.TelegramId,
                                  text: $"Гра вже на паузі",
                                  cancellationToken: cancellationToken);
     }
@@ -342,7 +361,7 @@ async void StartGame(long chatId, ITelegramBotClient botClient, CancellationToke
     GiveUserStats(game.Id);
     GiveGameStats(game.Id);
     db.SaveChanges();
-    SendStatsToAll(game.Id, botClient,cancellationToken);
+    SendStatsToAll(game.Id, botClient, cancellationToken);
 
 }
 void GiveUserStats(int gameId)
@@ -401,9 +420,213 @@ void GiveGameStats(int gameId)
         game.BunkerInfos.Add(bunkerInfos[i]);
         bunkerInfos.RemoveAt(i);
     }
+    game.VotingList = db.VotingLists.Find(game.Users.Count);
 
 }
+async void NewRound(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    game.Status++;
+    if (game.Status == 6)
+    {
+        Message sentMessage = await botClient.SendTextMessageAsync(
+                                 chatId: game.GroupId,
+                                 text: $"Починаєтся раунд загроз для Жителів бункера",
+                                 cancellationToken: cancellationToken);
+    }
+    else
+    {
+        Message sMessage = await botClient.SendTextMessageAsync(
+                             chatId: game.GroupId,
+                             text: $"Починаєтся '{game.Status}' раунд\nБуде проведено '{game.VotingList.roundVotings[game.Status]}' голосувань",
+                             cancellationToken: cancellationToken);
+    }
+    db.SaveChanges();
+    GiveSpeakingTime(game.Users[0]);
+}
+void StartHazards(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    AsignHazards(gameId);
+    GiveHazard(gameId,botClient,cancellationToken);
+}
+async void StartHazardsExile(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                                 chatId: game.GroupId,
+                                 text: $"Починаєтся раунд загроз для вигнанців",
+                                 cancellationToken: cancellationToken);
+    GiveHazardExile(gameId, botClient, cancellationToken);
+}
+void GiveHazard(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    if (game.CurrentHazzardTargetId == 0)
+    {
+        foreach (BUser u in game.Users)
+        {
+            if (!u.IsVotedOut)
+            {
+                game.CurrentHazzardTargetId = u.TelegramId;
+                db.SaveChanges();
+                SendHazard(gameId, botClient, cancellationToken);
+                return;
+            }
+        }
 
+    }
+    else
+    {
+        BUser user = GetUser(game.CurrentHazzardTargetId);
+        if (user == null)
+            return;
+        if (game.Users.IndexOf(user) == game.Users.Count - 1)
+        {
+            game.CurrentHazzardTargetId = 0;
+            db.SaveChanges();
+        }
+        else
+        {
+            for (int i = game.Users.IndexOf(user) + 1; i < game.Users.Count; i++)
+            {
+                if (!game.Users[i].IsVotedOut)
+                {
+                    game.CurrentHazzardTargetId = game.Users[i].TelegramId;
+                    db.SaveChanges();
+                    SendHazard(gameId, botClient, cancellationToken);
+                    return;
+                }
+            }
+
+        }
+    }
+}
+
+void GiveHazardExile(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    if (game.CurrentHazzardTargetId == 0)
+    {
+        foreach (BUser u in game.Users)
+        {
+            if (u.IsVotedOut)
+            {
+                game.CurrentHazzardTargetId = u.TelegramId;
+                db.SaveChanges();
+                SendHazardExile(gameId, botClient, cancellationToken);
+                return;
+            }
+        }
+
+    }
+    else
+    {
+        BUser user = GetUser(game.CurrentHazzardTargetId);
+        if (user == null)
+            return;
+        if (game.Users.IndexOf(user) == game.Users.Count - 1)
+        {
+
+        }
+        else
+        {
+            for (int i = game.Users.IndexOf(user) + 1; i < game.Users.Count; i++)
+            {
+                if (game.Users[i].IsVotedOut)
+                {
+                    game.CurrentHazzardTargetId = game.Users[i].TelegramId;
+                    db.SaveChanges();
+                    SendHazard(gameId, botClient, cancellationToken);
+                    return;
+                }
+            }
+
+        }
+    }
+}
+async void SendHazard(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    BUser user = GetUser(game.CurrentHazzardTargetId);
+    Message sMessage = await botClient.SendTextMessageAsync(
+                                 chatId: game.GroupId,
+                                 text: $"Загроза гравця '{user.Name}'\n Ви можете використовувати все що є в бункері та живих персонажів що до нього потрапили та багаж мертвих жителів бункера для того щоб перемогти загрозу.\n У разі невдачі '{user.Name}' помре",
+                                 cancellationToken: cancellationToken);
+    Message s2Message = await botClient.SendTextMessageAsync(
+                                 chatId: game.GroupId,
+                                 text: $"Загроза:\n '{user.AsignedHazard.Name}'",
+                                 cancellationToken: cancellationToken);
+    InlineKeyboardMarkup inlineKeyboard = new(new[]{
+                        InlineKeyboardButton.WithCallbackData("Так", $"'{user.Id}'_winHazard"),
+                        InlineKeyboardButton.WithCallbackData("Ні", $"'{user.Id}'_loseHazard")
+                    });
+    Message sentAdminMessage = await botClient.SendTextMessageAsync(
+          chatId: user.BGame.Admin.TelegramId,
+          replyMarkup: inlineKeyboard,
+          text: $"Чи перемагають гравці загрозу?");
+}
+async void SendHazardExile(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    BUser user = GetUser(game.CurrentHazzardTargetId);
+    Message sMessage = await botClient.SendTextMessageAsync(
+                                 chatId: game.GroupId,
+                                 text: $"Загроза гравця '{user.Name}'\n Ви можете використовувати живих персонажів вигнанців та багаж мертвих вигнанців для того щоб перемогти загрозу.\n У разі невдачі '{user.Name}' помре",
+                                 cancellationToken: cancellationToken);
+    Message s2Message = await botClient.SendTextMessageAsync(
+                                 chatId: game.GroupId,
+                                 text: $"Загроза:\n '{user.AsignedHazard.Name}'",
+                                 cancellationToken: cancellationToken);
+    InlineKeyboardMarkup inlineKeyboard = new(new[]{
+                        InlineKeyboardButton.WithCallbackData("Так", $"'{user.Id}'_winHazard"),
+                        InlineKeyboardButton.WithCallbackData("Ні", $"'{user.Id}'_loseHazard")
+                    });
+    Message sentAdminMessage = await botClient.SendTextMessageAsync(
+          chatId: user.BGame.Admin.TelegramId,
+          replyMarkup: inlineKeyboard,
+          text: $"Чи перемагають гравці загрозу?");
+}
+async void LoseHazard(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    BUser user = GetUser(game.CurrentHazzardTargetId);
+    user.IsDead = true;
+    game.Status++;
+    Message sMessage = await botClient.SendTextMessageAsync(
+                                 chatId: game.GroupId,
+                                 text: $"Ви не впоралися з загрозою. '{user.Name}' помирає\n Ви більше не можете використовувати можливості його персонажа(окрім багажу) для боротьби з наступними загрозами",
+                                 cancellationToken: cancellationToken);
+    GiveHazard(gameId, botClient, cancellationToken);
+    db.SaveChanges();
+}
+async void AsignHazards(int gameId)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    for (int i = 0; i < game.Users.Count; i++)
+    {
+        game.Users[i].AsignedHazard = game.Hazards[i];
+    }
+    db.SaveChanges();
+}
 async void SendStatsToAll(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     BGame? game = db.Games.Find(gameId);
@@ -415,8 +638,9 @@ async void SendStatsToAll(int gameId, ITelegramBotClient botClient, Cancellation
     }
     Message sMessage = await botClient.SendTextMessageAsync(
                                  chatId: game.GroupId,
-                                 text: $"В даному чаті створену гру не знайдено",
+                                 text: $"Гра починаєтся\n Катастрофа:\n '{game.Catastrophe.Name}'",
                                  cancellationToken: cancellationToken);
+
 }
 async void MainMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
@@ -586,7 +810,7 @@ async void VoteResults(int gameId, ITelegramBotClient botClient)
                   text: "");
     }
 }
-async void endSpeaking(BGame game)
+async void EndSpeaking(BGame game)
 {
     for (int i = 0; i < game.Users.Count; i++)
     {
@@ -595,20 +819,27 @@ async void endSpeaking(BGame game)
             Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: game.GroupId,
                   text: $"Час промови '{game.Users[i].Name}' закінчився");
-            if (i == game.Users.Count - 1)
+
+            for (int j = i + 1; j < game.Users.Count; j++)
             {
-                sentMessage = await botClient.SendTextMessageAsync(
-                    chatId: game.GroupId,
-                    text: $"Починається загальний час \n Ведучий може почати голосування коли гравці домовляться");
+                if (game.Users[j].IsVotedOut)
+                {
+                    continue;
+                }
+                else
+                {
+                    GiveSpeakingTime(game.Users[i]);
+                    return;
+                }
             }
-            else
-            {
-                giveSpeakingTime(game.Users[i]);
-            }
+            sentMessage = await botClient.SendTextMessageAsync(
+                chatId: game.GroupId,
+                text: $"Починається загальний час \n Ведучий може почати голосування коли гравці домовляться");
+            return;
         }
     }
 }
-async void giveSpeakingTime(BUser user)
+async void GiveSpeakingTime(BUser user)
 {
     Message sentGroupMessage = await botClient.SendTextMessageAsync(
           chatId: user.BGame.GroupId,
@@ -621,13 +852,13 @@ async void giveSpeakingTime(BUser user)
           chatId: user.TelegramId,
           replyMarkup: inlineKeyboard,
           text: "Починається твій час промови.");
-    user.SpeakingButtonMessageId=sentUserMessage.MessageId;
+    user.SpeakingButtonMessageId = sentUserMessage.MessageId;
 
     Message sentAdminMessage = await botClient.SendTextMessageAsync(
           chatId: user.BGame.Admin.TelegramId,
           replyMarkup: inlineKeyboard,
           text: $"На випадок якщо '{user.Name}' \"Затягне\" з промовою");
-    user.BGame.Admin.SpeakingButtonMessageId= sentAdminMessage.MessageId;
+    user.BGame.Admin.SpeakingButtonMessageId = sentAdminMessage.MessageId;
     db.SaveChanges();
 }
 
@@ -641,7 +872,16 @@ async void CharactersMenu(BUser user, int index, ITelegramBotClient botClient, C
     string text = "";
     BGame game = user.BGame;
     BUser u = game.Users[index];
-    text += $"'{u.Name}'\n";
+    text += $"'{u.Name}' ";
+    if (u.IsVotedOut)
+    {
+        text += "Вигнанець ";
+    }
+    if (u.IsDead)
+    {
+        text += "Мертвий";
+    }
+    text += "\n";
     if (u.ProfessionOpened)
     {
         text += $"Професія | '{u.Profession.Name}'\n";
@@ -738,7 +978,7 @@ async void GameInfoMenu(BUser user, ITelegramBotClient botClient, CancellationTo
     }
     List<InlineKeyboardButton> keyboardButtons = new();
     keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'_MainMenu"));
-    string text = $"Катастрофа: '{user.BGame.Catastrophe}'\n Бункер:\n";
+    string text = $"Катастрофа: '{user.BGame.Catastrophe.Name}'\n Бункер:\n";
     for (int i = 0; i < user.BGame.Status; i++)
     {
         text += $"\"'{user.BGame.Catastrophe}'\"\n";
@@ -766,7 +1006,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
 {
     switch (type)
     {
-        case "Prof":
+        case "Proffesion":
             {
                 user.ProfessionOpened = true;
                 var userChat = await botClient.GetChatAsync(user.TelegramId);
@@ -778,7 +1018,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
 
             }
             break;
-        case "Bio":
+        case "Biology":
             {
                 user.BiologyOpened = true;
                 var userChat = await botClient.GetChatAsync(user.TelegramId);
@@ -789,7 +1029,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 MainMenu(user, botClient, cancellationToken);
             }
             break;
-        case "Hob":
+        case "Hobby":
             {
                 user.HobbyOpened = true;
                 var userChat = await botClient.GetChatAsync(user.TelegramId);
@@ -800,7 +1040,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 MainMenu(user, botClient, cancellationToken);
             }
             break;
-        case "Heal":
+        case "Health":
             {
                 user.HealthConditionOpened = true;
                 var userChat = await botClient.GetChatAsync(user.TelegramId);
@@ -811,7 +1051,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 MainMenu(user, botClient, cancellationToken);
             }
             break;
-        case "Info":
+        case "AddInfo":
             {
                 user.AdditionalInfoOpened = true;
                 var userChat = await botClient.GetChatAsync(user.TelegramId);
@@ -822,7 +1062,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 MainMenu(user, botClient, cancellationToken);
             }
             break;
-        case "Lug":
+        case "Luggage":
             {
                 user.LuggagesOpened = true;
                 var userChat = await botClient.GetChatAsync(user.TelegramId);
@@ -833,7 +1073,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 MainMenu(user, botClient, cancellationToken);
             }
             break;
-        case "Card1":
+        case "FirstSCard":
             {
                 user.FirstSpecialCardUsed = true;
                 var userChat = await botClient.GetChatAsync(user.TelegramId);
@@ -845,7 +1085,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 PauseGame(user.BGame.GroupId, botClient, cancellationToken);
             }
             break;
-        case "Card2":
+        case "SecondSCard":
             {
                 user.SecondSpecialCardUsed = true;
                 var userChat = await botClient.GetChatAsync(user.TelegramId);
@@ -877,7 +1117,7 @@ void GiveNewCard(long userId, string type)
 
     switch (type)
     {
-        case "Prof":
+        case "Proffesion":
             {
                 bool uni = false;
                 int i = -1;
@@ -897,7 +1137,7 @@ void GiveNewCard(long userId, string type)
 
             }
             break;
-        case "Bio":
+        case "Biology":
             {
                 bool uni = false;
                 int i = -1;
@@ -916,7 +1156,7 @@ void GiveNewCard(long userId, string type)
                 user.Biology = listBiologies[i];
             }
             break;
-        case "Hob":
+        case "Hobby":
             {
                 bool uni = false;
                 int i = -1;
@@ -935,7 +1175,7 @@ void GiveNewCard(long userId, string type)
                 user.Hobby = listHobbies[i];
             }
             break;
-        case "Heal":
+        case "Health":
             {
                 bool uni = false;
                 int i = -1;
@@ -954,7 +1194,7 @@ void GiveNewCard(long userId, string type)
                 user.HealthCondition = listHealthConditions[i];
             }
             break;
-        case "Info":
+        case "AddInfo":
             {
                 bool uni = false;
                 int i = -1;
@@ -973,7 +1213,7 @@ void GiveNewCard(long userId, string type)
                 user.AdditionalInfo = listAdditionalInfos[i];
             }
             break;
-        case "Lug":
+        case "Luggage":
             {
                 bool uni = false;
                 int i = -1;
@@ -1029,29 +1269,39 @@ void SwapCards(long user1Id, long user2Id, string type)
         return;
     switch (type)
     {
-        case "Bio":
+        case "Biology":
             {
                 (user2.Biology, user1.Biology) = (user1.Biology, user2.Biology);
             }
             break;
-        case "Hob":
+        case "Hobby":
             {
                 (user2.Hobby, user1.Hobby) = (user1.Hobby, user2.Hobby);
             }
             break;
-        case "Heal":
+        case "Health":
             {
                 (user2.HealthCondition, user1.HealthCondition) = (user1.HealthCondition, user2.HealthCondition);
             }
             break;
-        case "Info":
+        case "AddInfo":
             {
                 (user2.AdditionalInfo, user1.AdditionalInfo) = (user1.AdditionalInfo, user2.AdditionalInfo);
             }
             break;
-        case "Lug":
+        case "11Luggage":
             {
-                (user2.Luggages, user1.Luggages) = (user1.Luggages, user2.Luggages);
+                (user2.Luggages[0], user1.Luggages[0]) = (user1.Luggages[0], user2.Luggages[0]);
+            }
+            break;
+        case "12Luggage":
+            {
+                (user2.Luggages[1], user1.Luggages[0]) = (user1.Luggages[0], user2.Luggages[1]);
+            }
+            break;
+        case "21Luggage":
+            {
+                (user2.Luggages[0], user1.Luggages[1]) = (user1.Luggages[1], user2.Luggages[0]);
             }
             break;
     }
@@ -1064,7 +1314,7 @@ void SwapAllUsersCards(long gameId, string type)
         return;
     switch (type)
     {
-        case "Bio":
+        case "Biology":
             {
                 List<Biology> listBio = new();
                 List<BUser> listBusers = new();
@@ -1085,7 +1335,7 @@ void SwapAllUsersCards(long gameId, string type)
                 }
             }
             break;
-        case "Hob":
+        case "Hobby":
             {
                 List<Hobby> listHob = new();
                 List<BUser> listBusers = new();
@@ -1106,7 +1356,7 @@ void SwapAllUsersCards(long gameId, string type)
                 }
             }
             break;
-        case "Heal":
+        case "Health":
             {
                 List<HealthCondition> listHealth = new();
                 List<BUser> listBusers = new();
@@ -1127,7 +1377,7 @@ void SwapAllUsersCards(long gameId, string type)
                 }
             }
             break;
-        case "Info":
+        case "AddInfo":
             {
                 List<AdditionalInfo> listInfo = new();
                 List<BUser> listBusers = new();
@@ -1148,7 +1398,7 @@ void SwapAllUsersCards(long gameId, string type)
                 }
             }
             break;
-        case "Lug":
+        case "Luggage":
             {
                 int twoLugUser = -1;
                 List<Luggage> listLug = new();
@@ -1218,6 +1468,7 @@ void StealLuggage(long user1Id, long user2Id)
     GiveNewCard(user2Id, "Card");
     db.SaveChanges();
 }
+
 
 async void AdminMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
@@ -1305,7 +1556,7 @@ async void SendOpenCard2AdminMenu(BUser admin, BUser target, ITelegramBotClient 
     {
         keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Спеціальна карта", $"'{target.Id}'_openFirstSCard"));
     }
-    if (target.SpecialCards.Count>1 && !target.SecondSpecialCardUsed)
+    if (target.SpecialCards.Count > 1 && !target.SecondSpecialCardUsed)
     {
         keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"ДОДАТКОВА спеціальна карта", $"'{target.Id}'_openSecondSCard"));
     }
