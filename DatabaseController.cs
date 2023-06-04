@@ -98,9 +98,11 @@ public class BUser
     public virtual AdditionalInfo? AdditionalInfo { get; set; }
     public virtual List<SpecialCard> SpecialCards { get; set; } = new();
     public virtual BGame? BGame { get; set; }
-    public virtual int MenuMessageId { get; set; }
-    public virtual int VoteMessageId { get; set; }
+    public int MenuMessageId { get; set; } = 0;
+    public int VoteMessageId { get; set; } = 0;
+    public int SpeakingButtonMessageId { get; set; } = 0;
     public bool IsVoteDoubled { get; set; } = false;
+    public bool IsVotedOut { get; set; } = false;
     public virtual BUser? VotedFor { get; set; }
 
     public bool FirstSpecialCardUsed { get; set; } = false;
@@ -136,6 +138,7 @@ public class BGame
 {
     public int Id { get; set; }
     public virtual List<BUser> Users { get; set; } = new();
+    public virtual List<BUser> MaxVotesUsers { get; set; } = new();
     public virtual List<BunkerInfo> BunkerInfos { get; set; } = new();
     public virtual List<Hazard> Hazards { get; set; } = new();
     public virtual Catastrophe? Catastrophe { get; set; }
