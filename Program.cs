@@ -206,6 +206,172 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
 
         }
     }
+    if (update.Type == UpdateType.CallbackQuery)
+    {
+        var callback = update.CallbackQuery;
+        var chatId = callback.Message.Chat.Id;
+        var c = chatIdRegex.Match(callback.Data);
+        if (c.Groups.Count == 3)
+        {
+            var idData = c.Groups[1].Value;
+            var command = c.Groups[2].Value;
+            switch (command)
+            {
+                case "startHazards":
+                    {
+                        BGame game = db.Games.Find(idData);
+                        if (game.Status > 6)
+                            break;
+                        game.Status = 7;
+                        db.SaveChanges();
+                        StartHazards( int.Parse(idData), botClient, cancellationToken);
+                    }
+                    break;
+                case "winHazard":
+                    {
+                        WinHazard(int.Parse(idData), botClient, cancellationToken);
+                    }
+                    break;
+                case "loseHazard":
+                    {
+                        LoseHazard(int.Parse(idData), botClient, cancellationToken);
+                    }
+                    break;
+                case "openProfession":
+                    {
+                        BUser user=db.Users.Find(idData);
+                        if (user == null)
+                            break;
+                        OpenStat(user, "Profession", botClient, cancellationToken);
+                    }
+                    break;
+                case "openBiology":
+                    {
+                        BUser user = db.Users.Find(idData);
+                        if (user == null)
+                            break;
+                        OpenStat(user, "Biology", botClient, cancellationToken);
+                    }
+                    break;
+                case "openHobby":
+                    {
+                        BUser user = db.Users.Find(idData);
+                        if (user == null)
+                            break;
+                        OpenStat(user, "Hobby", botClient, cancellationToken);
+                    }
+                    break;
+                case "openHealth":
+                    {
+                        BUser user = db.Users.Find(idData);
+                        if (user == null)
+                            break;
+                        OpenStat(user, "Health", botClient, cancellationToken);
+                    }
+                    break;
+                case "openLuggage":
+                    {
+                        BUser user = db.Users.Find(idData);
+                        if (user == null)
+                            break;
+                        OpenStat(user, "Luggage", botClient, cancellationToken);
+                    }
+                    break;
+                case "openAddInfo":
+                    {
+                        BUser user = db.Users.Find(idData);
+                        if (user == null)
+                            break;
+                        OpenStat(user, "AddInfo", botClient, cancellationToken);
+                    }
+                    break;
+                case "openFirstSCard":
+                    {
+                        BUser user = db.Users.Find(idData);
+                        if (user == null)
+                            break;
+                        OpenStat(user, "FirstSCard", botClient, cancellationToken);
+                    }
+                    break;
+                case "openSecondSCard":
+                    {
+                        BUser user = db.Users.Find(idData);
+                        if (user == null)
+                            break;
+                        OpenStat(user, "SecondSCard", botClient, cancellationToken);
+                    }
+                    break;
+                case "AdminMenu":
+                    {
+                        BUser user = db.Users.Find(idData);
+                        if (user == null)
+                            break;
+                        AdminMenu(user,botClient,cancellationToken);
+                    }
+                    break;
+                case "CharactersMenu":
+                    {
+                        BUser user = db.Users.Find(idData);
+                        if (user == null)
+                            break;
+                        CharactersMenu(user,0, botClient, cancellationToken);
+                    }
+                    break;
+                case "GameInfoMenu":
+                    {
+                        BUser user = db.Users.Find(idData);
+                        if (user == null)
+                            break;
+                        GameInfoMenu(user, botClient, cancellationToken);
+                    }
+                    break;
+                case "vote":
+                    {
+                        var data=idData.Split('.');
+                        BUser user = db.Users.Find(data[0]);
+                        if (user == null)
+                            break;
+                        BUser user2 = db.Users.Find(data[1]);
+                        if (user == null)
+                            break;
+                        user.VotedFor=user2;
+                        db.SaveChanges();
+                        await botClient.DeleteMessageAsync(user.TelegramId, user.VoteMessageId, cancellationToken);
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                 chatId: user.BGame.GroupId,
+                                 text: $"'{user.Name} проголосував'",
+                                 cancellationToken: cancellationToken);
+
+                    }
+                    break;
+                case "voteOut":
+                    {
+                        BUser user = db.Users.Find(idData);
+                        if (user == null)
+                            break;
+                        user.IsVotedOut = true;
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                 chatId: user.BGame.GroupId,
+                                 text: $"'{user.Name} тепер вигнанець'",
+                                 cancellationToken: cancellationToken);
+                        if (user.BGame.VotingList.roundVotings[user.BGame.Status] == 2)
+                        {
+                            Message sMessage = await botClient.SendTextMessageAsync(
+                                 chatId: user.BGame.GroupId,
+                                 text: $"'{user.Name} тепер вигнанець'",
+                                 cancellationToken: cancellationToken);
+                        }
+                    }
+                    break;
+                case "":
+                    {
+
+                    }
+                    break;
+
+            }
+        }
+    }
 
 }
 Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -443,7 +609,7 @@ void GiveUserStats(int gameId)
     BGame? game = db.Games.Find(gameId);
     if (game == null)
         return;
-    List<Profession> listProffesions = new(db.Professions);
+    List<Profession> listProfesions = new(db.Professions);
     List<Hobby> listHobbies = new(db.Hobbies);
     List<Luggage> listLuggages = new(db.Luggages);
     List<HealthCondition> listHealthConditions = new(db.HealthConditions);
@@ -452,9 +618,9 @@ void GiveUserStats(int gameId)
     List<SpecialCard> listSpecialCard = new(db.SpecialCards);
     foreach (BUser user in game.Users)
     {
-        int i = Random.Shared.Next(0, listProffesions.Count);
-        user.Profession = (listProffesions[i]);
-        listProffesions.RemoveAt(i);
+        int i = Random.Shared.Next(0, listProfesions.Count);
+        user.Profession = (listProfesions[i]);
+        listProfesions.RemoveAt(i);
         i = Random.Shared.Next(0, listLuggages.Count);
         user.Luggages.Add(listLuggages[i]);
         listLuggages.RemoveAt(i);
@@ -692,8 +858,8 @@ async void SendHazard(int gameId, ITelegramBotClient botClient, CancellationToke
                                  text: $"Загроза:\n '{user.AsignedHazard.Name}'",
                                  cancellationToken: cancellationToken);
     InlineKeyboardMarkup inlineKeyboard = new(new[]{
-                        InlineKeyboardButton.WithCallbackData("Так", $"'{user.Id}'_winHazard"),
-                        InlineKeyboardButton.WithCallbackData("Ні", $"'{user.Id}'_loseHazard")
+                        InlineKeyboardButton.WithCallbackData("Так", $"'{game.Id}'_winHazard"),
+                        InlineKeyboardButton.WithCallbackData("Ні", $"'{game.Id}'_loseHazard")
                     });
     Message sentAdminMessage = await botClient.SendTextMessageAsync(
           chatId: user.BGame.Admin.TelegramId,
@@ -716,8 +882,8 @@ async void SendHazardExile(int gameId, ITelegramBotClient botClient, Cancellatio
                                  text: $"Загроза:\n '{user.AsignedHazard.Name}'",
                                  cancellationToken: cancellationToken);
     InlineKeyboardMarkup inlineKeyboard = new(new[]{
-                        InlineKeyboardButton.WithCallbackData("Так", $"'{user.Id}'_winHazard"),
-                        InlineKeyboardButton.WithCallbackData("Ні", $"'{user.Id}'_loseHazard")
+                        InlineKeyboardButton.WithCallbackData("Так", $"'{game.Id}'_winHazard"),
+                        InlineKeyboardButton.WithCallbackData("Ні", $"'{game.Id}'_loseHazard")
                     });
     Message sentAdminMessage = await botClient.SendTextMessageAsync(
           chatId: user.BGame.Admin.TelegramId,
@@ -795,7 +961,7 @@ async void MainMenu(BUser user, ITelegramBotClient botClient, CancellationToken 
     if (!user.ProfessionOpened && (user.BGame.SpeakerId == user.TelegramId || user.BGame.Status==6))
     {
         ProfMarker = "%F0%9F%94%93";
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Розкрити професію", $"'{user.Id}'_openProffession"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Розкрити професію", $"'{user.Id}'_openProfession"));
     }
     if (!user.BiologyOpened && (user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
     {
@@ -934,7 +1100,7 @@ async void VoteResults(int gameId, ITelegramBotClient botClient, CancellationTok
     if (max.Count == 1)
     {
         List<InlineKeyboardButton> keyboardButtons = new();
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Підтвердити", $"'{max[0]}'_voteOut"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Підтвердити", $"'{max[0].Id}'_voteOut"));
         InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
         Message sentAdminMessage = await botClient.SendTextMessageAsync(
                   chatId: game.Admin.TelegramId,
@@ -970,7 +1136,7 @@ async void EndSpeaking(BGame game, ITelegramBotClient botClient, CancellationTok
                 }
                 else
                 {
-                    GiveSpeakingTime(game.Users[i]);
+                    GiveSpeakingTime(game.Users[i],botClient,cancellationToken);
                     return;
                 }
             }
@@ -1154,7 +1320,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
 {
     switch (type)
     {
-        case "Proffesion":
+        case "Profesion":
             {
                 user.ProfessionOpened = true;
                 var userChat = await botClient.GetChatAsync(user.TelegramId);
@@ -1251,7 +1417,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
 
 void GiveNewCard(long userId, string type)
 {
-    List<Profession> listProffesions = new(db.Professions);
+    List<Profession> listProfesions = new(db.Professions);
     List<Hobby> listHobbies = new(db.Hobbies);
     List<Luggage> listLuggages = new(db.Luggages);
     List<HealthCondition> listHealthConditions = new(db.HealthConditions);
@@ -1265,23 +1431,23 @@ void GiveNewCard(long userId, string type)
 
     switch (type)
     {
-        case "Proffesion":
+        case "Profesion":
             {
                 bool uni = false;
                 int i = -1;
                 while (!uni)
                 {
                     uni = true;
-                    i = Random.Shared.Next(0, listProffesions.Count);
+                    i = Random.Shared.Next(0, listProfesions.Count);
                     foreach (BUser u in user.BGame.Users)
                     {
-                        if (u.Profession == listProffesions[i])
+                        if (u.Profession == listProfesions[i])
                         {
                             uni = false;
                         }
                     }
                 }
-                user.Profession = listProffesions[i];
+                user.Profession = listProfesions[i];
 
             }
             break;
