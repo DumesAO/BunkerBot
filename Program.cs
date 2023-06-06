@@ -1,4 +1,5 @@
 ﻿using BunkerBot;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Telegram.Bot;
@@ -344,7 +345,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
 
                     }
                     break;
-                case "voteOut":
+                case "voteOut1":
                     {
                         BUser user = db.Users.Find(idData);
                         if (user == null)
@@ -356,7 +357,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                                  cancellationToken: cancellationToken);
                         if (user.BGame.VotingList.roundVotings[user.BGame.Status] == 2)
                         {
-                            Message sMessage = await botClient.SendTextMessageAsync(
+                            Message s2Message = await botClient.SendTextMessageAsync(
                                  chatId: user.BGame.GroupId,
                                  text: $"'{user.Name} тепер вигнанець'",
                                  cancellationToken: cancellationToken);
@@ -681,14 +682,15 @@ async void NewRound(int gameId, ITelegramBotClient botClient, CancellationToken 
         }
         game.SpeakerId= 0;
         text += "Гравці можуть розкрити всі свої характеристики(окрім спеціальних карт, їх ще можна буде використати). \nКоли всі будуть готові ведучий може почати раунд загроз і ви зможете дізнатися хто виживе, а хто ні";
-        InlineKeyboardMarkup inlineKeyboard = new(new[]{
-                        InlineKeyboardButton.WithCallbackData("Почати", $"'{game.Id}'_startHazards"),
-                    });
+        
         Message sentMessage = await botClient.SendTextMessageAsync(
                                  chatId: game.Admin.TelegramId,
                                  text: $"Раунд Загроз",
-                                 replyMarkup: inlineKeyboard,
                                  cancellationToken: cancellationToken);
+        InlineKeyboardMarkup inlineKeyboard = new(new[]{
+                        InlineKeyboardButton.WithCallbackData("Почати", $"'{game.Id}'.'{sentMessage.MessageId}'_startHazards"),
+                    });
+        await botClient.EditMessageReplyMarkupAsync(game.Admin.TelegramId, sentMessage.MessageId, inlineKeyboard);
     }
     else
     {
@@ -696,9 +698,21 @@ async void NewRound(int gameId, ITelegramBotClient botClient, CancellationToken 
                              chatId: game.GroupId,
                              text: $"Починаєтся '{game.Status}' раунд\nБуде проведено '{game.VotingList.roundVotings[game.Status]}' голосувань",
                              cancellationToken: cancellationToken);
+        Message s2Message = await botClient.SendTextMessageAsync(
+                             chatId: game.GroupId,
+                             text: $"Відкрито нову характеристику бункера:\n '{game.BunkerInfos[game.Status-1]}'",
+                             cancellationToken: cancellationToken);
     }
+    game.RoundPart = 1;
     db.SaveChanges();
-    GiveSpeakingTime(game.Users[0],botClient,cancellationToken);
+    for (int j = 0; j < game.Users.Count; j++)
+    {
+        if (!game.Users[j].IsVotedOut)
+        {
+            GiveSpeakingTime(game.Users[j], botClient, cancellationToken);
+            return;
+        }
+    }
 }
 async void StartHazards(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
@@ -857,15 +871,16 @@ async void SendHazard(int gameId, ITelegramBotClient botClient, CancellationToke
                                  chatId: game.GroupId,
                                  text: $"Загроза:\n '{user.AsignedHazard.Name}'",
                                  cancellationToken: cancellationToken);
-    InlineKeyboardMarkup inlineKeyboard = new(new[]{
-                        InlineKeyboardButton.WithCallbackData("Так", $"'{game.Id}'_winHazard"),
-                        InlineKeyboardButton.WithCallbackData("Ні", $"'{game.Id}'_loseHazard")
-                    });
+    
     Message sentAdminMessage = await botClient.SendTextMessageAsync(
           chatId: user.BGame.Admin.TelegramId,
-          replyMarkup: inlineKeyboard,
           text: $"Чи перемагають гравці загрозу?",
           cancellationToken: cancellationToken);
+    InlineKeyboardMarkup inlineKeyboard = new(new[]{
+                        InlineKeyboardButton.WithCallbackData("Так", $"'{game.Id}'.'{sentAdminMessage.MessageId}'_winHazard"),
+                        InlineKeyboardButton.WithCallbackData("Ні", $"'{game.Id}'.'{sentAdminMessage.MessageId}'_loseHazard")
+                    });
+    await botClient.EditMessageReplyMarkupAsync(user.BGame.Admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
 }
 async void SendHazardExile(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
@@ -881,15 +896,15 @@ async void SendHazardExile(int gameId, ITelegramBotClient botClient, Cancellatio
                                  chatId: game.GroupId,
                                  text: $"Загроза:\n '{user.AsignedHazard.Name}'",
                                  cancellationToken: cancellationToken);
-    InlineKeyboardMarkup inlineKeyboard = new(new[]{
-                        InlineKeyboardButton.WithCallbackData("Так", $"'{game.Id}'_winHazard"),
-                        InlineKeyboardButton.WithCallbackData("Ні", $"'{game.Id}'_loseHazard")
-                    });
     Message sentAdminMessage = await botClient.SendTextMessageAsync(
           chatId: user.BGame.Admin.TelegramId,
-          replyMarkup: inlineKeyboard,
           text: $"Чи перемагають гравці загрозу?",
           cancellationToken: cancellationToken);
+    InlineKeyboardMarkup inlineKeyboard = new(new[]{
+                        InlineKeyboardButton.WithCallbackData("Так", $"'{game.Id}'.'{sentAdminMessage.MessageId}'_winHazardExile"),
+                        InlineKeyboardButton.WithCallbackData("Ні", $"'{game.Id}'.'{sentAdminMessage.MessageId}'_loseHazardExile")
+                    });
+    await botClient.EditMessageReplyMarkupAsync(user.BGame.Admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
 }
 async void LoseHazard(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
@@ -915,6 +930,32 @@ async void WinHazard(int gameId, ITelegramBotClient botClient, CancellationToken
                                  text: $"Ви перемогли загрозу!",
                                  cancellationToken: cancellationToken);
     GiveHazard(gameId, botClient, cancellationToken);
+}
+
+async void LoseHazardExile(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    BUser user = GetUser(game.CurrentHazzardTargetId);
+    user.IsDead = true;
+    Message sMessage = await botClient.SendTextMessageAsync(
+                                 chatId: game.GroupId,
+                                 text: $"Ви не впоралися з загрозою. '{user.Name}' помирає\n Ви більше не можете використовувати можливості його персонажа(окрім багажу) для боротьби з наступними загрозами",
+                                 cancellationToken: cancellationToken);
+    GiveHazardExile(gameId, botClient, cancellationToken);
+    db.SaveChanges();
+}
+async void WinHazardExile(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    Message sMessage = await botClient.SendTextMessageAsync(
+                                 chatId: game.GroupId,
+                                 text: $"Ви перемогли загрозу!",
+                                 cancellationToken: cancellationToken);
+    GiveHazardExile(gameId, botClient, cancellationToken);
 }
 async void AsignHazards(int gameId)
 {
@@ -945,10 +986,6 @@ async void SendStatsToAll(int gameId, ITelegramBotClient botClient, Cancellation
 async void MainMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
     string ProfMarker = "%F0%9F%94%92";
     string BioMarker = "%F0%9F%94%92";
     string HealthMarker = "%F0%9F%94%92";
@@ -999,13 +1036,7 @@ async void MainMenu(BUser user, ITelegramBotClient botClient, CancellationToken 
         SCardMarker = "%F0%9F%94%93";
         keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Розкрити ДОДАТКОВУ спеціальну карту", $"'{user.Id}'_openSecondSCard"));
     }
-    if (user.BGame.Admin == user)
-    {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Меню Адміністратора", $"'{user.Id}'_AdminMenu"));
-    }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Персонажі гравців", $"'{user.Id}'_CharactersMenu"));
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Інформація про бункер та катастрофу", $"'{user.Id}'_GameInfoMenu"));
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    
     string Lugtext = string.Join(" ", user.Luggages.Select(d => d.Name));
     string text = $"Ваші характеристики:\n " +
                   $"'{ProfMarker}'|Професія: '{user.Profession!.Name}'\n" +
@@ -1021,31 +1052,49 @@ async void MainMenu(BUser user, ITelegramBotClient botClient, CancellationToken 
     }
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: text,
                   cancellationToken: cancellationToken);
-    user.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    if (user.BGame.Admin == user)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Меню Адміністратора", $"'{user.Id}'.'{sentMessage.MessageId}'_AdminMenu"));
+    }
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Персонажі гравців", $"'{user.Id}'.'{sentMessage.MessageId}'_CharactersMenu"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Інформація про бункер та катастрофу", $"'{user.Id}'.'{sentMessage.MessageId}'_GameInfoMenu"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 
 }
-async void VoteMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
+async void VoteMenu(BUser user, int votingCount, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
     List<InlineKeyboardButton> keyboardButtons = new();
-    foreach (BUser u in user.BGame.Users)
-    {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'_vote"));
-    }
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: "Оберіть гравця, проти якого голосуєте",
                   cancellationToken: cancellationToken);
-    user.VoteMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    foreach (BUser u in user.BGame.Users)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'.'{sentMessage.MessageId}'_vote'{votingCount}'"));
+    }
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
-async void VoteResults(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+async void VoteMenuMax(BUser user, int votingCount, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    var chatId = user.TelegramId;
+    List<InlineKeyboardButton> keyboardButtons = new();
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: chatId,
+                  text: "Оберіть гравця, проти якого голосуєте",
+                  cancellationToken: cancellationToken);
+    foreach (BUser u in user.BGame.Users)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'.'{sentMessage.MessageId}'_vote'{votingCount}'"));
+    }
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
+}
+async void VoteResults(int gameId, int votingCount, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     BGame? game = db.Games.Find(gameId);
     if (game == null)
@@ -1100,13 +1149,13 @@ async void VoteResults(int gameId, ITelegramBotClient botClient, CancellationTok
     if (max.Count == 1)
     {
         List<InlineKeyboardButton> keyboardButtons = new();
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Підтвердити", $"'{max[0].Id}'_voteOut"));
-        InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
         Message sentAdminMessage = await botClient.SendTextMessageAsync(
                   chatId: game.Admin.TelegramId,
-                  replyMarkup: inlineKeyboard,
                   text: $"Вигнати '{max[0].Name}'?",
                   cancellationToken: cancellationToken);
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Підтвердити", $"'{max[0].Id}'.'{sentAdminMessage.MessageId}'_voteOut'{votingCount}'"));
+        InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+        await botClient.EditMessageReplyMarkupAsync(game.Admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
     }
     if (max.Count > 1)
     {
@@ -1114,6 +1163,80 @@ async void VoteResults(int gameId, ITelegramBotClient botClient, CancellationTok
                   chatId: chatId,
                   text: "Оскільки по голосам лідує більше одного гравця, зараз буде надано додатковий час на виправдання для них, після якого буде проведено повторне голосування.",
                   cancellationToken: cancellationToken);
+        GiveSpeakingTimeMaxVotes(max[0], botClient, cancellationToken);
+
+    }
+}
+async void VoteResultsMax(int gameId, int votingCount, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    BGame? game = db.Games.Find(gameId);
+    if (game == null)
+        return;
+    var chatId = game.GroupId;
+    string text = "";
+    int maxCount = -1;
+    List<BUser> max = new();
+    int count = 0;
+    foreach (BUser u in game.MaxVotesUsers)
+    {
+        text += $"За гравця '{u.Name}' проголосували: \n";
+        count = 0;
+        foreach (BUser u2 in game.Users)
+        {
+            if (u2.VotedFor == u)
+            {
+                if (u2.IsVoteDoubled)
+                {
+                    count += 2;
+                    text += "Подвійний голос|";
+                }
+                else
+                {
+                    count++;
+                }
+                text += $"'{u2.Name}'\n";
+            }
+        }
+        text += $"Всього '{count}' голосів \n\n";
+        if (count > maxCount)
+        {
+            maxCount = count;
+            max.Clear();
+            max.Add(u);
+        }
+        else if (count == maxCount)
+        {
+            max.Add(u);
+        }
+    }
+    text += "Найбільше голосів за \n";
+    foreach (BUser u in max)
+    {
+        text += $"'{u.Name}'\n";
+    }
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: chatId,
+                  text: text,
+                  cancellationToken: cancellationToken);
+
+    if (max.Count == 1)
+    {
+        List<InlineKeyboardButton> keyboardButtons = new();
+        Message sentAdminMessage = await botClient.SendTextMessageAsync(
+                  chatId: game.Admin.TelegramId,
+                  text: $"Вигнати '{max[0].Name}'?",
+                  cancellationToken: cancellationToken);
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Підтвердити", $"'{max[0].Id}'.'{sentAdminMessage.MessageId}'_voteOut'{votingCount}'"));
+        InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+        await botClient.EditMessageReplyMarkupAsync(game.Admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
+    }
+    if (max.Count > 1)
+    {
+        sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: chatId,
+                  text: "Оскільки по голосам лідує більше одного гравця, вигнанцем стане випадковий з них.",
+                  cancellationToken: cancellationToken);
+        GiveSpeakingTimeMaxVotes(max[0], botClient, cancellationToken);
 
     }
 }
@@ -1130,13 +1253,9 @@ async void EndSpeaking(BGame game, ITelegramBotClient botClient, CancellationTok
 
             for (int j = i + 1; j < game.Users.Count; j++)
             {
-                if (game.Users[j].IsVotedOut)
+                if (!game.Users[j].IsVotedOut)
                 {
-                    continue;
-                }
-                else
-                {
-                    GiveSpeakingTime(game.Users[i],botClient,cancellationToken);
+                    GiveSpeakingTime(game.Users[j], botClient, cancellationToken);
                     return;
                 }
             }
@@ -1144,6 +1263,8 @@ async void EndSpeaking(BGame game, ITelegramBotClient botClient, CancellationTok
                 chatId: game.GroupId,
                 text: $"Починається загальний час \n Ведучий може почати голосування коли гравці домовляться",
                 cancellationToken: cancellationToken);
+            game.RoundPart = 2;
+            db.SaveChanges();
             return;
         }
     }
@@ -1155,32 +1276,74 @@ async void GiveSpeakingTime(BUser user, ITelegramBotClient botClient, Cancellati
           text: $"Починається час промови '{user.Name}'",
           cancellationToken: cancellationToken);
     user.BGame.SpeakerId = user.TelegramId;
-    InlineKeyboardMarkup inlineKeyboard = new(new[]{
-                        InlineKeyboardButton.WithCallbackData("Завершити промову", $"'{user.Id}'_endSpeaking"),
-                    });
     Message sentUserMessage = await botClient.SendTextMessageAsync(
           chatId: user.TelegramId,
-          replyMarkup: inlineKeyboard,
           text: "Починається твій час промови.",
           cancellationToken: cancellationToken);
-    user.SpeakingButtonMessageId = sentUserMessage.MessageId;
+    Message sentAdminMessage = await botClient.SendTextMessageAsync(
+          chatId: user.BGame.Admin.TelegramId,
+          text: $"На випадок якщо '{user.Name}' \"Затягне\" з промовою",
+          cancellationToken: cancellationToken);
+    InlineKeyboardMarkup inlineKeyboard = new(new[]{
+                        InlineKeyboardButton.WithCallbackData("Завершити промову", $"'{user.Id}'.'{sentUserMessage.MessageId}'.'{sentAdminMessage.MessageId}'_endSpeaking"),
+                    });
+    await botClient.EditMessageReplyMarkupAsync(user.TelegramId, sentUserMessage.MessageId, inlineKeyboard);
+    await botClient.EditMessageReplyMarkupAsync (user.BGame.Admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
+    db.SaveChanges();
+}
+async void GiveSpeakingTimeMaxVotes(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    Message sentGroupMessage = await botClient.SendTextMessageAsync(
+          chatId: user.BGame.GroupId,
+          text: $"Починається час виправдовування '{user.Name}'",
+          cancellationToken: cancellationToken);
+    user.BGame.SpeakerId = user.TelegramId;
+    
+    Message sentUserMessage = await botClient.SendTextMessageAsync(
+          chatId: user.TelegramId,
+          text: "Починається твій час виправдовування.",
+          cancellationToken: cancellationToken);
 
     Message sentAdminMessage = await botClient.SendTextMessageAsync(
           chatId: user.BGame.Admin.TelegramId,
-          replyMarkup: inlineKeyboard,
-          text: $"На випадок якщо '{user.Name}' \"Затягне\" з промовою",
+          text: $"На випадок якщо '{user.Name}' \"Затягне\" з виправдовуванням",
           cancellationToken: cancellationToken);
-    user.BGame.Admin.SpeakingButtonMessageId = sentAdminMessage.MessageId;
+    InlineKeyboardMarkup inlineKeyboard = new(new[]{
+                        InlineKeyboardButton.WithCallbackData("Завершити виправдовування", $"'{user.Id}'.'{sentUserMessage.MessageId}'.'{sentAdminMessage.MessageId}'_endSpeakingMaxVotes"),
+                    });
+    await botClient.EditMessageReplyMarkupAsync(user.TelegramId, sentUserMessage.MessageId, inlineKeyboard);
+    await botClient.EditMessageReplyMarkupAsync(user.BGame.Admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
     db.SaveChanges();
+}
+async void EndSpeakingMaxVotes(BGame game, ITelegramBotClient botClient, CancellationToken cancellationToken)
+{
+    for (int i = 0; i < game.MaxVotesUsers.Count; i++)
+    {
+        if (game.MaxVotesUsers[i].TelegramId == game.SpeakerId)
+        {
+            Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: game.GroupId,
+                  text: $"Час промови '{game.MaxVotesUsers[i].Name}' закінчився",
+                  cancellationToken: cancellationToken);
+            if (i == game.MaxVotesUsers.Count - 1)
+            {
+                sentMessage = await botClient.SendTextMessageAsync(
+                    chatId: game.GroupId,
+                    text: $"Виправдовування завершено \n Ведучий може почати повторне голосування",
+                    cancellationToken: cancellationToken);
+            }
+            else
+            {
+                GiveSpeakingTimeMaxVotes(game.MaxVotesUsers[i + 1], botClient, cancellationToken);
+            }
+            return;
+        }
+    }
 }
 
 async void CharactersMenu(BUser user, int index, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
     string text = "";
     BGame game = user.BGame;
     BUser u = game.Users[index];
@@ -1263,47 +1426,40 @@ async void CharactersMenu(BUser user, int index, ITelegramBotClient botClient, C
         text += "Додаткова спеціальна карта | ------\n";
     }
     List<InlineKeyboardButton> keyboardButtons = new();
+    
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: user.TelegramId,
+                  text: text,
+                  cancellationToken: cancellationToken);
     if (index > 0)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("%E2%97%80", $"'{user.Id}.{index - 1}'_CharactersMenu"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("%E2%97%80", $"'{user.Id}.{index - 1}'.'{sentMessage.MessageId}'_CharactersMenu"));
     }
     if (index < user.BGame.Users.Count - 1)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("%E2%96%B6", $"'{user.Id}.{index + 1}'_CharactersMenu"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("%E2%96%B6", $"'{user.Id}.{index + 1}'.'{sentMessage.MessageId}'_CharactersMenu"));
     }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Головне меню", $"'{user.Id}.{index + 1}'_MainMenu"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Головне меню", $"'{user.Id}.{index + 1}'.'{sentMessage.MessageId}'_MainMenu"));
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
-    Message sentMessage = await botClient.SendTextMessageAsync(
-                  chatId: user.TelegramId,
-                  replyMarkup: inlineKeyboard,
-                  text: text,
-                  cancellationToken: cancellationToken);
-    user.MenuMessageId = sentMessage.MessageId;
+    await botClient.EditMessageReplyMarkupAsync(user.TelegramId, sentMessage.MessageId, inlineKeyboard);
     db.SaveChanges();
 }
 async void GameInfoMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
-
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'_MainMenu"));
     string text = $"Катастрофа: '{user.BGame.Catastrophe.Name}'\n Бункер:\n";
     for (int i = 0; i < user.BGame.Status; i++)
     {
-        text += $"\"'{user.BGame.Catastrophe}'\"\n";
+        text += $"\"'{user.BGame.BunkerInfos[i]}'\"\n";
     }
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: user.TelegramId,
-                  replyMarkup: inlineKeyboard,
                   text: text,
                   cancellationToken: cancellationToken);
-    user.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'.'{sentMessage.MessageId}'_MainMenu"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(user.TelegramId, sentMessage.MessageId, inlineKeyboard);
 }
 
 BUser? GetUser(long userChatId)
@@ -1787,425 +1943,341 @@ void StealLuggage(long user1Id, long user2Id)
 async void AdminMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: chatId,
+                  text: "Меню Ведучого",
+                  cancellationToken: cancellationToken);
     InlineKeyboardMarkup inlineKeyboard = new(new[]{
                         InlineKeyboardButton.WithCallbackData("Почати голосування", $"'{user.Id}'_startVoting"),
                         InlineKeyboardButton.WithCallbackData("ПАУЗА", $"'{user.Id}'_pauseGame"),
                         InlineKeyboardButton.WithCallbackData("ПРИБРАТИ З ПАУЗИ", $"'{user.Id}'_unpauseGame"),
-                        InlineKeyboardButton.WithCallbackData("Розкрити характеристику гравця",$"'{user.Id}'_OpenCardMenu"),
-                        InlineKeyboardButton.WithCallbackData("Змінити Характеристику гравця", $"'{user.Id}'_ChangeCardMenu"),
-                        InlineKeyboardButton.WithCallbackData("Обміняти Характеристики двох гравців", $"'{user.Id}'_SwapCardsMenu"),
-                        InlineKeyboardButton.WithCallbackData("Перемішати Характеристику відкритих гравців", $"'{user.Id}'_ShuffleCardsMenu"),
-                        InlineKeyboardButton.WithCallbackData("Вкрасти багаж", $"'{user.Id}'_StealLuggageMenu"),
-                        InlineKeyboardButton.WithCallbackData("Змінити Характеристику Бункера", $"'{user.Id}'_BunkerCardMenu"),
-                        InlineKeyboardButton.WithCallbackData("Передати роль ведучого", $"'{user.Id}'_NewAdminMenu"),
-                        InlineKeyboardButton.WithCallbackData("Редагувати голоси",$"'{user.Id}'_VotesMenu"),
-                        InlineKeyboardButton.WithCallbackData("ГОЛОВНЕ МЕНЮ", $"'{user.Id}'_MainMenu")
+                        InlineKeyboardButton.WithCallbackData("Розкрити характеристику гравця",$"'{user.Id}'.'{sentMessage.MessageId}'_OpenCardMenu"),
+                        InlineKeyboardButton.WithCallbackData("Змінити Характеристику гравця", $"'{user.Id}'.'{sentMessage.MessageId}'_ChangeCardMenu"),
+                        InlineKeyboardButton.WithCallbackData("Обміняти Характеристики двох гравців", $"'{user.Id}'.'{sentMessage.MessageId}'_SwapCardsMenu"),
+                        InlineKeyboardButton.WithCallbackData("Перемішати Характеристику відкритих гравців", $"'{user.Id}'.'{sentMessage.MessageId}'_ShuffleCardsMenu"),
+                        InlineKeyboardButton.WithCallbackData("Вкрасти багаж", $"'{user.Id}'.'{sentMessage.MessageId}'_StealLuggageMenu"),
+                        InlineKeyboardButton.WithCallbackData("Змінити Характеристику Бункера", $"'{user.Id}'.'{sentMessage.MessageId}'_BunkerCardMenu"),
+                        InlineKeyboardButton.WithCallbackData("Передати роль ведучого", $"'{user.Id}'.'{sentMessage.MessageId}'_NewAdminMenu"),
+                        InlineKeyboardButton.WithCallbackData("Редагувати голоси",$"'{user.Id}'.'{sentMessage.MessageId}'_VotesMenu"),
+                        InlineKeyboardButton.WithCallbackData("ГОЛОВНЕ МЕНЮ", $"'{user.Id}'.'{sentMessage.MessageId}'_MainMenu")
                     });
-    Message sentMessage = await botClient.SendTextMessageAsync(
-                  chatId: chatId,
-                  replyMarkup: inlineKeyboard,
-                  text: "Меню Ведучого",
-                  cancellationToken: cancellationToken);
-    user.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 
 async void SendOpenCardAdminMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
-    foreach (BUser u in user.BGame.Users)
-    {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'_OpenCard2Menu"));
-    }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'_MainMenu"));
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: "Оберіть гравця",
                   cancellationToken: cancellationToken);
-    user.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    foreach (BUser u in user.BGame.Users)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'.'{sentMessage.MessageId}'_OpenCard2Menu"));
+    }
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'.'{sentMessage.MessageId}'_MainMenu"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 async void SendOpenCard2AdminMenu(BUser admin, BUser target, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = admin.TelegramId;
-    if (admin.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, admin.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: chatId,
+                  text: $"'{target.Name}'|Оберіть характеристику яку бажаєте відкрити",
+                  cancellationToken: cancellationToken);
     if (!target.ProfessionOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Професія", $"'{target.Id}'_openProfession"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Професія", $"'{target.Id}'.'{sentMessage.MessageId}'_openProfession"));
     }
     if (!target.BiologyOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Біологія", $"'{target.Id}'_openBiology"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Біологія", $"'{target.Id}'.'{sentMessage.MessageId}'_openBiology"));
     }
     if (!target.HealthConditionOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Стан здоров'я", $"'{target.Id}'_openHealth"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Стан здоров'я", $"'{target.Id}'.'{sentMessage.MessageId}'_openHealth"));
     }
     if (!target.HobbyOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Хоббі", $"'{target.Id}'_openHobby"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Хоббі", $"'{target.Id}'.'{sentMessage.MessageId}'_openHobby"));
     }
     if (!target.LuggagesOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Багаж", $"'{target.Id}'_openFirstLuggage"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Багаж", $"'{target.Id}'.'{sentMessage.MessageId}'_openFirstLuggage"));
     }
     if (!target.AdditionalInfoOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Факт", $"'{target.Id}'_openAddInfo"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Факт", $"'{target.Id}'.'{sentMessage.MessageId}'_openAddInfo"));
     }
     if (!target.FirstSpecialCardUsed)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Спеціальна карта", $"'{target.Id}'_openFirstSCard"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Спеціальна карта", $"'{target.Id}'.'{sentMessage.MessageId}'_openFirstSCard"));
     }
     if (target.SpecialCards.Count > 1 && !target.SecondSpecialCardUsed)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"ДОДАТКОВА спеціальна карта", $"'{target.Id}'_openSecondSCard"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"ДОДАТКОВА спеціальна карта", $"'{target.Id}'.'{sentMessage.MessageId}'_openSecondSCard"));
     }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися до вибору гравця", $"'{admin.Id}'_OpenCardMenu"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися до вибору гравця", $"'{admin.Id}'.'{sentMessage.MessageId}'_OpenCardMenu"));
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
-    Message sentMessage = await botClient.SendTextMessageAsync(
-                  chatId: chatId,
-                  replyMarkup: inlineKeyboard,
-                  text: $"'{target.Name}'|Оберіть характеристику",
-                  cancellationToken: cancellationToken);
-    admin.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 
 async void SendNewCardAdminMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
-    foreach (BUser u in user.BGame.Users)
-    {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'_ChangeCard2Menu"));
-    }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'_MainMenu"));
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: "Оберіть гравця",
                   cancellationToken: cancellationToken);
-    user.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    foreach (BUser u in user.BGame.Users)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'.'{sentMessage.MessageId}'_ChangeCard2Menu"));
+    }
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'.'{sentMessage.MessageId}'_MainMenu"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 async void SendNewCard2AdminMenu(BUser admin, BUser target, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = admin.TelegramId;
-    if (admin.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, admin.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
+    
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: chatId,
+                  text: $"'{target.Name}'|Оберіть характеристику",
+                  cancellationToken: cancellationToken);
     if (target.ProfessionOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Професія '{target.Profession.Name}'", $"'{target.Id}'_changeProfession"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Професія '{target.Profession.Name}'", $"'{target.Id}'.'{sentMessage.MessageId}'_changeProfession"));
     }
     if (target.BiologyOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Біологія '{target.Biology.Name}'", $"'{target.Id}'_changeBiology"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Біологія '{target.Biology.Name}'", $"'{target.Id}'.'{sentMessage.MessageId}'_changeBiology"));
     }
     if (target.HealthConditionOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Стан здоров'я '{target.HealthCondition.Name}'", $"'{target.Id}'_changeHealth"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Стан здоров'я '{target.HealthCondition.Name}'", $"'{target.Id}'.'{sentMessage.MessageId}'_changeHealth"));
     }
     if (target.HobbyOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Хоббі '{target.Hobby.Name}'", $"'{target.Id}'_changeHobby"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Хоббі '{target.Hobby.Name}'", $"'{target.Id}'.'{sentMessage.MessageId}'_changeHobby"));
     }
     if (target.LuggagesOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Багаж '{target.Luggages[0].Name}'", $"'{target.Id}'_changeFirstLuggage"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Багаж '{target.Luggages[0].Name}'", $"'{target.Id}'.'{sentMessage.MessageId}'_changeFirstLuggage"));
     }
     if (target.Luggages.Count > 1)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Додатковий Багаж '{target.Luggages[1].Name}'", $"'{target.Id}'_changeSecondLuggage"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Додатковий Багаж '{target.Luggages[1].Name}'", $"'{target.Id}'.'{sentMessage.MessageId}'_changeSecondLuggage"));
     }
     if (target.AdditionalInfoOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Факт '{target.AdditionalInfo.Name}'", $"'{target.Id}'_changeAddInfo"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Факт '{target.AdditionalInfo.Name}'", $"'{target.Id}'.'{sentMessage.MessageId}'_changeAddInfo"));
     }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися до вибору гравця", $"'{admin.Id}'_ChangeCardMenu"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися до вибору гравця", $"'{admin.Id}'.'{sentMessage.MessageId}'_ChangeCardMenu"));
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
-    Message sentMessage = await botClient.SendTextMessageAsync(
-                  chatId: chatId,
-                  replyMarkup: inlineKeyboard,
-                  text: $"'{target.Name}'|Оберіть характеристику",
-                  cancellationToken: cancellationToken);
-    admin.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 
 async void SwapCardAdminMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
-    foreach (BUser u in user.BGame.Users)
-    {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'_SwapCard2Menu"));
-    }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'_MainMenu"));
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: "Оберіть першого гравця",
                   cancellationToken: cancellationToken);
-    user.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    foreach (BUser u in user.BGame.Users)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'.'{sentMessage.MessageId}'_SwapCard2Menu"));
+    }
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'.'{sentMessage.MessageId}'_MainMenu"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 async void SwapCard2AdminMenu(BUser admin, BUser target1, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = admin.TelegramId;
-    if (admin.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, admin.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: chatId,
+                  text: "Оберіть другого гравця",
+                  cancellationToken: cancellationToken);
     foreach (BUser u in admin.BGame.Users)
     {
         if (u != target1)
         {
-            keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{admin.Id}'.'{u.Id}'.'{target1.Id}'_SwapCard3Menu"));
+            keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{admin.Id}'.'{u.Id}'.'{target1.Id}'.'{sentMessage.MessageId}'_SwapCard3Menu"));
         }
     }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися до вибору 1 гравця", $"'{admin.Id}'_SwapCardsMenu"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися до вибору 1 гравця", $"'{admin.Id}'.'{sentMessage.MessageId}'_SwapCardsMenu"));
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
-    Message sentMessage = await botClient.SendTextMessageAsync(
-                  chatId: chatId,
-                  replyMarkup: inlineKeyboard,
-                  text: "Оберіть другого гравця",
-                  cancellationToken: cancellationToken);
-    admin.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 async void SwapCard3AdminMenu(BUser admin, BUser target1, BUser target2, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = admin.TelegramId;
-    if (admin.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, admin.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
+    
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: chatId,
+                  text: $"'{target1.Name}','{target2.Name}'|Оберіть характеристику",
+                  cancellationToken: cancellationToken);
     if (target1.ProfessionOpened && target2.ProfessionOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Професія ", $"'{target1.Id}'.'{target2.Id}'_swapProfession"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Професія ", $"'{target1.Id}'.'{target2.Id}'.'{sentMessage.MessageId}'_swapProfession"));
     }
     if (target1.BiologyOpened && target2.BiologyOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Біологія ", $"'{target1.Id}'.'{target2.Id}'_swapBiology"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Біологія ", $"'{target1.Id}'.'{target2.Id}'.'{sentMessage.MessageId}'_swapBiology"));
     }
     if (target1.HealthConditionOpened && target2.HealthConditionOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Стан здоров'я ", $"'{target1.Id}'.'{target2.Id}'_swapHealth"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Стан здоров'я ", $"'{target1.Id}'.'{target2.Id}'.'{sentMessage.MessageId}'_swapHealth"));
     }
     if (target1.HobbyOpened && target2.HobbyOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Хоббі ", $"'{target1.Id}'.'{target2.Id}'_swapHobby"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Хоббі ", $"'{target1.Id}'.'{target2.Id}'.'{sentMessage.MessageId}'_swapHobby"));
     }
     if (target1.LuggagesOpened && target2.LuggagesOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Основний багаж '{target1.Name}' та основний багаж '{target2.Name}' ", $"'{target1.Id}'.'{target2.Id}'_swap11Luggage"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Основний багаж '{target1.Name}' та основний багаж '{target2.Name}' ", $"'{target1.Id}'.'{target2.Id}'.'{sentMessage.MessageId}'_swap11Luggage"));
     }
     if (target1.LuggagesOpened && target2.Luggages.Count > 1)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Основний багаж '{target1.Name}' та додатковий багаж '{target2.Name}' ", $"'{target1.Id}'.'{target2.Id}'_swap12Luggage"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Основний багаж '{target1.Name}' та додатковий багаж '{target2.Name}' ", $"'{target1.Id}'.'{target2.Id}'.'{sentMessage.MessageId}'_swap12Luggage"));
     }
     if (target1.Luggages.Count > 1 && target2.LuggagesOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Додатковий багаж '{target1.Name}' та основний багаж '{target2.Name}' ", $"'{target1.Id}'.'{target2.Id}'_swap21Luggage"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Додатковий багаж '{target1.Name}' та основний багаж '{target2.Name}' ", $"'{target1.Id}'.'{target2.Id}'.'{sentMessage.MessageId}'_swap21Luggage"));
     }
     if (target1.AdditionalInfoOpened && target2.AdditionalInfoOpened)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Факт ", $"'{target1.Id}'.'{target2.Id}'_swapAddInfo"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Факт ", $"'{target1.Id}'.'{target2.Id}'.'{sentMessage.MessageId}'_swapAddInfo"));
     }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися до вибору гравців", $"'{admin.Id}'_SwapCardsMenu"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися до вибору гравців", $"'{admin.Id}'.'{sentMessage.MessageId}'_SwapCardsMenu"));
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
-    Message sentMessage = await botClient.SendTextMessageAsync(
-                  chatId: chatId,
-                  replyMarkup: inlineKeyboard,
-                  text: $"'{target1.Name}','{target2.Name}'|Оберіть характеристику",
-                  cancellationToken: cancellationToken);
-    admin.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 
 async void ShuffleCardAdminMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Всі відкриті професії", $"'{user.Id}'_shuffleProfession"));
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Вся відкрита біологія", $"'{user.Id}'_shuffleBiology"));
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Всі відкриті стани здоров'я", $"'{user.Id}'_shuffleHealth"));
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Всі відкриті хоббі ", $"'{user.Id}'_shuffleHobby"));
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Всі відкриті багажі", $"'{user.Id}'_shuffleLuggage"));
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Всі відкриті факти ", $"'{user.Id}'_shuffleAddInfo"));
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'_MainMenu"));
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: $"Оберіть характеристику",
                   cancellationToken: cancellationToken);
-    user.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Всі відкриті професії", $"'{user.Id}'.'{sentMessage.MessageId}'_shuffleProfession"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Вся відкрита біологія", $"'{user.Id}'.'{sentMessage.MessageId}'_shuffleBiology"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Всі відкриті стани здоров'я", $"'{user.Id}'.'{sentMessage.MessageId}'_shuffleHealth"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Всі відкриті хоббі ", $"'{user.Id}'.'{sentMessage.MessageId}'_shuffleHobby"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Всі відкриті багажі", $"'{user.Id}'.'{sentMessage.MessageId}'_shuffleLuggage"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Всі відкриті факти ", $"'{user.Id}'.'{sentMessage.MessageId}'_shuffleAddInfo"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'.'{sentMessage.MessageId}'_MainMenu"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 
 async void StealLuggageAdminMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
-    foreach (BUser u in user.BGame.Users)
-    {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'_StealLuggage2Menu"));
-    }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'_MainMenu"));
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: "Оберіть гравця, що краде багаж",
                   cancellationToken: cancellationToken);
-    user.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    foreach (BUser u in user.BGame.Users)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'.'{sentMessage.MessageId}'_StealLuggage2Menu"));
+    }
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'.'{sentMessage.MessageId}'_MainMenu"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 async void StealLuggage2AdminMenu(BUser admin, BUser stealer, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = admin.TelegramId;
-    if (admin.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, admin.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
+    Message sentMessage = await botClient.SendTextMessageAsync(
+                  chatId: chatId,
+                  text: $"'{stealer.Name}'| Оберіть ціль крадіжки",
+                  cancellationToken: cancellationToken);
     foreach (BUser u in admin.BGame.Users)
     {
         if (u != stealer)
         {
             if (u.LuggagesOpened)
             {
-                keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Luggages[0].Name}' у '{u.Name}'", $"'{stealer.Id}'.'{u.Id}'_stealLuggage"));
+                keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Luggages[0].Name}' у '{u.Name}'", $"'{stealer.Id}'.'{u.Id}'.'{sentMessage.MessageId}'_stealLuggage"));
             }
         }
     }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися до вибору крадія", $"'{admin.Id}'_StealLuggageMenu"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися до вибору крадія", $"'{admin.Id}'.'{sentMessage.MessageId}'_StealLuggageMenu"));
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
-    Message sentMessage = await botClient.SendTextMessageAsync(
-                  chatId: chatId,
-                  replyMarkup: inlineKeyboard,
-                  text: $"'{stealer.Name}'| Оберіть ціль крадіжки",
-                  cancellationToken: cancellationToken);
-    admin.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 
 async void BunkerCardAdminMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
-    for (int i = 0; i < user.BGame.Status; i++)
-    {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{user.BGame.BunkerInfos[i].Name}'", $"'{user.Id}'.'{i}'_BunkerCard2Menu"));
-    }
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: $"Оберіть характеристику бункера",
                   cancellationToken: cancellationToken);
-    user.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    for (int i = 0; i < user.BGame.Status; i++)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{user.BGame.BunkerInfos[i].Name}'", $"'{user.Id}'.'{i}'.'{sentMessage.MessageId}'_BunkerCard2Menu"));
+    }
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 async void BunkerCard2AdminMenu(BUser user, int cardNumber, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Замінити на нову", $"'{user.Id}'.'{cardNumber}_newBunkerCard"));
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Скинути", $"'{user.Id}'.'{cardNumber}_removeBunkerCard"));
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: $"\"'{user.BGame.BunkerInfos[cardNumber].Name}'\"\n Що зробити з картою?",
                   cancellationToken: cancellationToken);
-    user.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Замінити на нову", $"'{user.Id}'.'{cardNumber}'.'{sentMessage.MessageId}'_newBunkerCard"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Скинути", $"'{user.Id}'.'{cardNumber}'.'{sentMessage.MessageId}'_removeBunkerCard"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 
 async void GiveAdminMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
-    foreach (BUser u in user.BGame.Users)
-    {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'_giveAdmin"));
-    }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'_MainMenu"));
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: "Оберіть гравця, якому передати права Ведучого",
                   cancellationToken: cancellationToken);
-    user.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    foreach (BUser u in user.BGame.Users)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'.'{sentMessage.MessageId}'_giveAdmin"));
+    }
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'.'{sentMessage.MessageId}'_MainMenu"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 
 async void VotesAdminMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = user.TelegramId;
-    if (user.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, user.MenuMessageId, cancellationToken);
-    }
     string text = "";
     List<InlineKeyboardButton> keyboardButtons = new();
     foreach (BUser u in user.BGame.Users)
     {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'_Votes2AdminMenu"));
         text += $"За гравця '{u.Name}' проголосували: \n";
         foreach (BUser u2 in user.BGame.Users)
         {
@@ -2219,60 +2291,50 @@ async void VotesAdminMenu(BUser user, ITelegramBotClient botClient, Cancellation
             }
         }
     }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'_MainMenu"));
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     Message sent1Message = await botClient.SendTextMessageAsync(
                   chatId: chatId,
                   text: text,
                   cancellationToken: cancellationToken);
     Message sent2Message = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: "Оберіть гравця, чий голос бажаєте редагувати",
                   cancellationToken: cancellationToken);
-    user.MenuMessageId = sent2Message.MessageId;
-    db.SaveChanges();
+    foreach (BUser u in user.BGame.Users)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'.'{sent1Message.MessageId}'.'{sent2Message.MessageId}'_Votes2AdminMenu"));
+    }
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Головне меню", $"'{user.Id}'.'{sent1Message.MessageId}'.'{sent2Message.MessageId}'_MainMenu"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sent2Message.MessageId, inlineKeyboard);
 }
 async void Votes2AdminMenu(BUser admin, BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = admin.TelegramId;
-    if (admin.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, admin.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Зміна вибору", $"'{admin.Id}'.'{user.Id}'_Votes3AdminMenu"));
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Подвоєння голосу", $"'{admin.Id}'.'{user.Id}'_doubleVote"));
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Відміна голосу", $"'{admin.Id}'.'{user.Id}'_cancelVote"));
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися", $"'{admin.Id}'_VotesMenu"));
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: "Що бажаєте зробити з голосом",
                   cancellationToken: cancellationToken);
-    admin.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Зміна вибору", $"'{admin.Id}'.'{user.Id}'.'{sentMessage.MessageId}'_Votes3AdminMenu"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Подвоєння голосу", $"'{admin.Id}'.'{user.Id}'.'{sentMessage.MessageId}'_doubleVote"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Відміна голосу", $"'{admin.Id}'.'{user.Id}'.'{sentMessage.MessageId}'_cancelVote"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися", $"'{admin.Id}'.'{sentMessage.MessageId}'_VotesMenu"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
 async void Votes3AdminMenu(BUser admin, BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
     var chatId = admin.TelegramId;
-    if (admin.MenuMessageId != 0)
-    {
-        await botClient.DeleteMessageAsync(chatId, admin.MenuMessageId, cancellationToken);
-    }
     List<InlineKeyboardButton> keyboardButtons = new();
-    foreach (BUser u in user.BGame.Users)
-    {
-        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'_voteAdmin"));
-    }
-    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Зміна вибору", $"'{admin.Id}'.'{user.Id}'_Votes2AdminMenu"));
-    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+    
     Message sentMessage = await botClient.SendTextMessageAsync(
                   chatId: chatId,
-                  replyMarkup: inlineKeyboard,
                   text: "Оберіть гравця, проти якого голосуєте",
                   cancellationToken: cancellationToken);
-    admin.MenuMessageId = sentMessage.MessageId;
-    db.SaveChanges();
+    foreach (BUser u in user.BGame.Users)
+    {
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"'{u.Name}'", $"'{user.Id}'.'{u.Id}'.'{sentMessage.MessageId}'_voteAdmin"));
+    }
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Повернутися", $"'{admin.Id}'.'{user.Id}'.'{sentMessage.MessageId}'_Votes2AdminMenu"));
+    InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
 }
