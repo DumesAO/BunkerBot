@@ -95,6 +95,29 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             }
                         }
                         break;
+                    case "/mainmenu":
+                        {
+                            BUser user=GetUser(chatId);
+                            if (user == null)
+                            {
+                                Message sentMessage = await botClient.SendTextMessageAsync(
+                                    chatId: chatId,
+                                    text: "Ви не гравець",
+                                    cancellationToken: cancellationToken);
+                                break;
+                            }
+                            if (user.BGame == null)
+                            {
+                                Message sentMessage = await botClient.SendTextMessageAsync(
+                                    chatId: chatId,
+                                    text: "Ви не в грі",
+                                    cancellationToken: cancellationToken);
+                                break;
+                            }
+                            MainMenu(user, botClient, cancellationToken);
+                                
+                        }
+                        break;
                     default:
                         {
                             Message sentMessage = await botClient.SendTextMessageAsync(
@@ -400,6 +423,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (game == null)
                             break;
                         game.VotingUsers = new(game.Users);
+                        db.SaveChanges();
                         foreach (BUser u in game.Users)
                         {
                             VoteMenu(u,botClient,cancellationToken);
@@ -416,6 +440,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (game == null)
                             break;
                         game.VotingUsers = new(game.Users);
+                        db.SaveChanges();
                         await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         foreach (BUser u in game.Users)
                         {
@@ -498,6 +523,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         user.IsVotedOut = true;
                         user.BGame.RoundPart = user.BGame.Status == 3 ? 4 : 3;
+                        db.SaveChanges();
                         await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
                         Message sMessage = await botClient.SendTextMessageAsync(
                                  chatId: user.BGame.GroupId,
@@ -724,6 +750,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         GiveNewCard(user.Id, "Profession");
+                        MainMenu(admin,botClient,cancellationToken);
                     }
                     break;
                 case "changeBiology":
@@ -739,6 +766,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         GiveNewCard(user.Id, "Biology");
+                        MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
                 case "changeHealth":
@@ -754,6 +782,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         GiveNewCard(user.Id, "Health");
+                        MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
                 case "changeHobby":
@@ -769,6 +798,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         GiveNewCard(user.Id, "Hobby");
+                        MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
                 case "changeFirstLuggage":
@@ -784,6 +814,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         GiveNewCard(user.Id, "FirstLuggage");
+                        MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
                 case "changeSecondLuggage":
@@ -799,6 +830,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         GiveNewCard(user.Id, "SecondLuggage");
+                        MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
                 case "changeAddInfo":
@@ -814,6 +846,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         GiveNewCard(user.Id, "AddInfo");
+                        MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
                 case "SwapCard2Menu":
@@ -862,6 +895,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapCards(user.Id,user2.Id,"Profession");
+                        MainMenu(user.BGame.Admin, botClient, cancellationToken);
                     }
                     break;
                 case "swapBiology":
@@ -877,6 +911,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapCards(user.Id, user2.Id, "Biology");
+                        MainMenu(user.BGame.Admin, botClient, cancellationToken);
                     }
                     break;
                 case "swapHealth":
@@ -892,6 +927,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapCards(user.Id, user2.Id, "Health");
+                        MainMenu(user.BGame.Admin, botClient, cancellationToken);
                     }
                     break;
                 case "swapHobby":
@@ -907,6 +943,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapCards(user.Id, user2.Id, "Hobby");
+                        MainMenu(user.BGame.Admin, botClient, cancellationToken);
                     }
                     break;
                 case "swap11Luggage":
@@ -922,6 +959,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapCards(user.Id, user2.Id, "11Luggage");
+                        MainMenu(user.BGame.Admin, botClient, cancellationToken);
                     }
                     break;
                 case "swap12Luggage":
@@ -937,6 +975,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapCards(user.Id, user2.Id, "12Luggage");
+                        MainMenu(user.BGame.Admin, botClient, cancellationToken);
                     }
                     break;
                 case "swap21Luggage":
@@ -952,6 +991,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapCards(user.Id, user2.Id, "21Luggage");
+                        MainMenu(user.BGame.Admin, botClient, cancellationToken);
                     }
                     break;
                 case "swapAddInfo":
@@ -967,6 +1007,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapCards(user.Id, user2.Id, "AddInfo");
+                        MainMenu(user.BGame.Admin, botClient, cancellationToken);
                     }
                     break;
                 case "shuffleProfession":
@@ -979,6 +1020,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapAllUsersCards(user.BGame.Id,"Profession");
+                        MainMenu(user, botClient, cancellationToken);
                     }
                     break;
                 case "shuffleBiology":
@@ -991,6 +1033,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapAllUsersCards(user.BGame.Id, "Biology");
+                        MainMenu(user, botClient, cancellationToken);
                     }
                     break;
                 case "shuffleHealth":
@@ -1003,6 +1046,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapAllUsersCards(user.BGame.Id, "Health");
+                        MainMenu(user, botClient, cancellationToken);
                     }
                     break;
                 case "shuffleHobby":
@@ -1015,6 +1059,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapAllUsersCards(user.BGame.Id, "Hobby");
+                        MainMenu(user, botClient, cancellationToken);
                     }
                     break;
                 case "shuffleLuggage":
@@ -1027,6 +1072,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapAllUsersCards(user.BGame.Id, "Luggage");
+                        MainMenu(user, botClient, cancellationToken);
                     }
                     break;
                 case "shuffleAddInfo":
@@ -1039,6 +1085,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapAllUsersCards(user.BGame.Id, "AddInfo");
+                        MainMenu(user, botClient, cancellationToken);
                     }
                     break;
                 case "StealLuggage2Menu":
@@ -1069,6 +1116,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         StealLuggage(user.Id, user2.Id);
+                        MainMenu(user.BGame.Admin, botClient, cancellationToken);
                     }
                     break;
                 case "BunkerCard2Menu":
@@ -1093,6 +1141,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (admin.BGame == null)
                             break;
                         GiveNewBunkerInfo(admin.BGame.Id, int.Parse(data[1]));
+                        MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
                 case "removeBunkerCard":
@@ -1104,7 +1153,13 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         if (admin.BGame == null)
                             break;
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                    chatId: admin.BGame.GroupId,
+                                    text: $"Прибрана характеристика бункера:\n '{admin.BGame.BunkerInfos[int.Parse(data[1])].Name}'",
+                                    cancellationToken: cancellationToken);
                         admin.BGame.BunkerInfos.RemoveAt(int.Parse(data[1]));
+                        db.SaveChanges();
+                        MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
                 case "giveAdmin":
@@ -1120,6 +1175,8 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (admin.BGame == null)
                             break;
                         admin.BGame.Admin = newAdmin;
+                        db.SaveChanges();
+                        MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
                 case "Votes2AdminMenu":
@@ -1166,6 +1223,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (admin.BGame == null)
                             break;
                         user.IsVoteDoubled = true;
+                        db.SaveChanges();
                         VoteResults(admin.BGame.Id, botClient, cancellationToken);
                     }
                     break;
@@ -1182,6 +1240,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (admin.BGame == null)
                             break;
                         user.VotedFor = null;
+                        db.SaveChanges();
                         VoteResults(admin.BGame.Id, botClient, cancellationToken);
                     }
                     break;
@@ -1246,6 +1305,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (admin.BGame == null)
                             break;
                         user.IsVoteDoubled = true;
+                        db.SaveChanges();
                         VoteResultsMax(admin.BGame.Id, botClient, cancellationToken);
                     }
                     break;
@@ -1262,6 +1322,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (admin.BGame == null)
                             break;
                         user.VotedFor = null;
+                        db.SaveChanges();
                         VoteResultsMax(admin.BGame.Id, botClient, cancellationToken);
                     }
                     break;
@@ -1305,12 +1366,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         admin.BGame.ExileBunkerInfos.Add(admin.BGame.BunkerInfos[int.Parse(data[1])]);
                         admin.BGame.BunkerInfos.RemoveAt(int.Parse(data[1]));
+                        db.SaveChanges();
                     }
                     break;
-                case "":
-                    {
-
-                    }
+                default:
                     break;
 
             }
@@ -1516,7 +1575,7 @@ async void UnpauseGame(long chatId, ITelegramBotClient botClient, CancellationTo
     if (!game.IsPaused)
     {
         Message sentMessage = await botClient.SendTextMessageAsync(
-                                 chatId: chatId,
+                                 chatId: game.Admin.TelegramId,
                                  text: $"Гра не на паузі",
                                  cancellationToken: cancellationToken);
     }
@@ -1583,7 +1642,9 @@ void GiveUserStats(int gameId)
         i = Random.Shared.Next(0, listAdditionalInfos.Count);
         user.AdditionalInfo = (listAdditionalInfos[i]);
         listAdditionalInfos.RemoveAt(i);
+        db.SaveChanges();
     }
+
 }
 void GiveGameStats(int gameId)
 {
@@ -1605,6 +1666,7 @@ void GiveGameStats(int gameId)
         bunkerInfos.RemoveAt(i);
     }
     game.VotingList = db.VotingLists.Find(game.Users.Count);
+    db.SaveChanges();
 
 }
 async void NewRound(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
@@ -2225,10 +2287,34 @@ async void EndSpeaking(BGame game, ITelegramBotClient botClient, CancellationTok
             }
             sentMessage = await botClient.SendTextMessageAsync(
                 chatId: game.GroupId,
-                text: $"Починається загальний час \n Ведучий може почати голосування коли гравці домовляться",
+                text: $"Починається загальний час",
                 cancellationToken: cancellationToken);
-            game.RoundPart = 2;
+            game.SpeakerId = 0;
             db.SaveChanges();
+            if (game.VotingList.roundVotings[game.Status] == 0)
+            {
+                sentMessage = await botClient.SendTextMessageAsync(
+                    chatId: game.GroupId,
+                    text: $"В даному раунді голосувань не повинно бути, тому коли гравці домоавлятся Ведучий може почати наступний раунд",
+                    cancellationToken: cancellationToken);
+                List<InlineKeyboardButton> keyboardButtons = new();
+                Message sentAdminMessage = await botClient.SendTextMessageAsync(
+                    chatId: game.Admin.TelegramId,
+                    text: $"Наступний раунд",
+                    cancellationToken: cancellationToken);
+                keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Почати", $"'{game.Admin.Id}'.'{sentAdminMessage.MessageId}'_startNewRound"));
+                InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+                await botClient.EditMessageReplyMarkupAsync(game.Admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
+            }
+            else
+            {
+                sentMessage = await botClient.SendTextMessageAsync(
+                    chatId: game.GroupId,
+                    text: $"Ведучий може почати голосування коли гравці домовляться",
+                    cancellationToken: cancellationToken);
+                game.RoundPart = 2;
+                db.SaveChanges();
+            }
             return;
         }
     }
@@ -2414,7 +2500,6 @@ async void CharactersMenu(BUser user, int index, ITelegramBotClient botClient, C
     keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Головне меню", $"'{user.Id}'.'{sentMessage.MessageId}'_MainMenu"));
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(user.TelegramId, sentMessage.MessageId, inlineKeyboard);
-    db.SaveChanges();
 }
 async void GameInfoMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
@@ -2456,6 +2541,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 chatId: user.BGame.GroupId,
                 text: $"'{userChat.Username}' розкриває свою професію: '{user.Profession.Name}'",
                 cancellationToken: cancellationToken);
+                db.SaveChanges();
                 MainMenu(user, botClient, cancellationToken);
 
             }
@@ -2468,6 +2554,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 chatId: user.BGame.GroupId,
                 text: $"'{userChat.Username}' розкриває свою біологію: '{user.Biology.Name}'",
                 cancellationToken: cancellationToken);
+                db.SaveChanges();
                 MainMenu(user, botClient, cancellationToken);
             }
             break;
@@ -2479,6 +2566,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 chatId: user.BGame.GroupId,
                 text: $"'{userChat.Username}' розкриває своє хоббі: '{user.Hobby.Name}'",
                 cancellationToken: cancellationToken);
+                db.SaveChanges();
                 MainMenu(user, botClient, cancellationToken);
             }
             break;
@@ -2490,6 +2578,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 chatId: user.BGame.GroupId,
                 text: $"'{userChat.Username}' розкриває свій стан здоров'я: '{user.HealthCondition.Name}'",
                 cancellationToken: cancellationToken);
+                db.SaveChanges();
                 MainMenu(user, botClient, cancellationToken);
             }
             break;
@@ -2501,6 +2590,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 chatId: user.BGame.GroupId,
                 text: $"'{userChat.Username}' розкриває факт про себе: '{user.AdditionalInfo.Name}'",
                 cancellationToken: cancellationToken);
+                db.SaveChanges();
                 MainMenu(user, botClient, cancellationToken);
             }
             break;
@@ -2512,6 +2602,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 chatId: user.BGame.GroupId,
                 text: $"'{userChat.Username}' розкриває своій багаж: '{user.Luggages[0].Name}'",
                 cancellationToken: cancellationToken);
+                db.SaveChanges();
                 MainMenu(user, botClient, cancellationToken);
             }
             break;
@@ -2524,6 +2615,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 text: $"'{userChat.Username}' розкриває свою спеціальну карту: '{user.SpecialCards[0].Name}'",
                 cancellationToken: cancellationToken);
                 MainMenu(user, botClient, cancellationToken);
+                db.SaveChanges();
                 PauseGame(user.BGame.GroupId, botClient, cancellationToken);
             }
             break;
@@ -2536,6 +2628,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
                 text: $"'{userChat.Username}' розкриває свою ДОДАТКОВУ спеціальну карту: '{user.SpecialCards[1].Name}'",
                 cancellationToken: cancellationToken);
                 MainMenu(user, botClient, cancellationToken);
+                db.SaveChanges();
                 PauseGame(user.BGame.GroupId, botClient, cancellationToken);
             }
             break;
@@ -2566,6 +2659,7 @@ void GiveNewBunkerInfo(int gameId, int index)
         }
     }
     game.BunkerInfos[index] = bunkerInfos[i];
+    db.SaveChanges();
 }
 void GiveNewCard(long userId, string type)
 {
@@ -2600,7 +2694,7 @@ void GiveNewCard(long userId, string type)
                     }
                 }
                 user.Profession = listProfesions[i];
-
+                db.SaveChanges();
             }
             break;
         case "Biology":
@@ -2620,6 +2714,7 @@ void GiveNewCard(long userId, string type)
                     }
                 }
                 user.Biology = listBiologies[i];
+                db.SaveChanges();
             }
             break;
         case "Hobby":
@@ -2639,6 +2734,7 @@ void GiveNewCard(long userId, string type)
                     }
                 }
                 user.Hobby = listHobbies[i];
+                db.SaveChanges();
             }
             break;
         case "Health":
@@ -2658,6 +2754,7 @@ void GiveNewCard(long userId, string type)
                     }
                 }
                 user.HealthCondition = listHealthConditions[i];
+                db.SaveChanges();
             }
             break;
         case "AddInfo":
@@ -2677,6 +2774,7 @@ void GiveNewCard(long userId, string type)
                     }
                 }
                 user.AdditionalInfo = listAdditionalInfos[i];
+                db.SaveChanges();
             }
             break;
         case "Luggage":
@@ -2699,6 +2797,7 @@ void GiveNewCard(long userId, string type)
                     }
                 }
                 user.Luggages[0] = listLuggages[i];
+                db.SaveChanges();
             }
             break;
         case "Card":
@@ -2721,10 +2820,10 @@ void GiveNewCard(long userId, string type)
                     }
                 }
                 user.SpecialCards.Add(listSpecialCards[i]);
+                db.SaveChanges();
             }
             break;
     }
-    db.SaveChanges();
 
 }
 void SwapCards(long user1Id, long user2Id, string type)
