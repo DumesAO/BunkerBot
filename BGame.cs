@@ -17,7 +17,7 @@ public class BGame
     public virtual List<Hazard> Hazards { get; set; } = new();
     public virtual Catastrophe? Catastrophe { get; set; }
     public long GroupId { get; set; }
-    public virtual BUser? Admin { get; set; }
+    public virtual int AdminId { get; set; } = -1;
     public virtual int StartGameBotMessageId { get; set; } = 0;
     public bool IsPaused { get; set; } = false;
     public virtual VotingList VotingList { get; set; }
@@ -25,7 +25,6 @@ public class BGame
     public int RoundPart { get; set; } = 0;
     public long SpeakerId { get; set; } = 0;
     public long CurrentHazzardTargetId { get; set; } = 0;
-    public virtual int SpeakingUserTime { get; set; }
 }
 
 public class VotingList
