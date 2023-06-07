@@ -1165,54 +1165,146 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         if (admin.BGame == null)
                             break;
-                        BGame game = admin.BGame;
-                        user.IsVoteDoubled= true;
-                        var chatId2 = game.GroupId;
-                        string text = "Ведучий змінив голоси \n";
-                        int maxCount = -1;
-                        List<BUser> max = new();
-                        int count = 0;
-                        foreach (BUser u in game.Users)
-                        {
-                            text += $"За гравця '{u.Name}' проголосували: \n";
-                            count = 0;
-                            foreach (BUser u2 in game.Users)
-                            {
-                                if (u2.VotedFor == u)
-                                {
-                                    if (u2.IsVoteDoubled)
-                                    {
-                                        count += 2;
-                                        text += "Подвійний голос|";
-                                    }
-                                    else
-                                    {
-                                        count++;
-                                    }
-                                    text += $"'{u2.Name}'\n";
-                                }
-                            }
-                            text += $"Всього '{count}' голосів \n\n";
-                            if (count > maxCount)
-                            {
-                                maxCount = count;
-                                max.Clear();
-                                max.Add(u);
-                            }
-                            else if (count == maxCount)
-                            {
-                                max.Add(u);
-                            }
-                        }
-                        text += "Найбільше голосів за \n";
-                        foreach (BUser u in max)
-                        {
-                            text += $"'{u.Name}'\n";
-                        }
-                        Message sentMessage = await botClient.SendTextMessageAsync(
-                        chatId: chatId2,
-                                      text: text,
-                                      cancellationToken: cancellationToken);
+                        user.IsVoteDoubled = true;
+                        VoteResults(admin.BGame.Id, botClient, cancellationToken);
+                    }
+                    break;
+                case "cancelVote":
+                    {
+                        var data = idData.Split('.');
+                        BUser admin = db.Users.Find(int.Parse(data[0]));
+                        if (admin == null)
+                            break;
+                        BUser user = db.Users.Find(int.Parse(data[1]));
+                        if (user == null)
+                            break;
+                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        if (admin.BGame == null)
+                            break;
+                        user.VotedFor = null;
+                        VoteResults(admin.BGame.Id, botClient, cancellationToken);
+                    }
+                    break;
+                case "voteAdmin":
+                    {
+                        var data = idData.Split('.');
+                        BUser user = db.Users.Find(int.Parse(data[0]));
+                        if (user == null)
+                            break;
+                        BUser user2 = db.Users.Find(int.Parse(data[1]));
+                        if (user == null)
+                            break;
+                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        if (user.BGame == null)
+                            break;
+                        user.VotedFor = user2;
+                        db.SaveChanges();
+                        VoteResults(user.BGame.Id, botClient, cancellationToken);
+                    }
+                    break;
+                case "VotesMax2AdminMenu":
+                    {
+                        var data = idData.Split('.');
+                        BUser admin = db.Users.Find(int.Parse(data[0]));
+                        if (admin == null)
+                            break;
+                        BUser user = db.Users.Find(int.Parse(data[1]));
+                        if (user == null)
+                            break;
+                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[3]), cancellationToken);
+                        if (admin.BGame == null)
+                            break;
+                        VotesMax2AdminMenu(admin, user, botClient, cancellationToken);
+                    }
+                    break;
+                case "VotesMax3AdminMenu":
+                    {
+                        var data = idData.Split('.');
+                        BUser admin = db.Users.Find(int.Parse(data[0]));
+                        if (admin == null)
+                            break;
+                        BUser user = db.Users.Find(int.Parse(data[1]));
+                        if (user == null)
+                            break;
+                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        if (admin.BGame == null)
+                            break;
+                        VotesMax3AdminMenu(admin, user, botClient, cancellationToken);
+                    }
+                    break;
+                case "doubleVoteMax":
+                    {
+                        var data = idData.Split('.');
+                        BUser admin = db.Users.Find(int.Parse(data[0]));
+                        if (admin == null)
+                            break;
+                        BUser user = db.Users.Find(int.Parse(data[1]));
+                        if (user == null)
+                            break;
+                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        if (admin.BGame == null)
+                            break;
+                        user.IsVoteDoubled = true;
+                        VoteResultsMax(admin.BGame.Id, botClient, cancellationToken);
+                    }
+                    break;
+                case "cancelVoteMax":
+                    {
+                        var data = idData.Split('.');
+                        BUser admin = db.Users.Find(int.Parse(data[0]));
+                        if (admin == null)
+                            break;
+                        BUser user = db.Users.Find(int.Parse(data[1]));
+                        if (user == null)
+                            break;
+                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        if (admin.BGame == null)
+                            break;
+                        user.VotedFor = null;
+                        VoteResultsMax(admin.BGame.Id, botClient, cancellationToken);
+                    }
+                    break;
+                case "VotesMaxMenu":
+                    {
+                        var data = idData.Split('.');
+                        BUser user = db.Users.Find(int.Parse(data[0]));
+                        if (user == null)
+                            break;
+                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        if (user.BGame == null)
+                            break;
+                        VotesMaxAdminMenu(user, botClient, cancellationToken);
+                    }
+                    break;
+                case "voteAdminMax":
+                    {
+                        var data = idData.Split('.');
+                        BUser user = db.Users.Find(int.Parse(data[0]));
+                        if (user == null)
+                            break;
+                        BUser user2 = db.Users.Find(int.Parse(data[1]));
+                        if (user == null)
+                            break;
+                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        if (user.BGame == null)
+                            break;
+                        user.VotedFor = user2;
+                        db.SaveChanges();
+                        VoteResultsMax(user.BGame.Id, botClient, cancellationToken);
+                    }
+                    break;
+                case "exileBunkerCard":
+                    {
+                        var data = idData.Split('.');
+                        BUser admin = db.Users.Find(int.Parse(data[0]));
+                        if (admin == null)
+                            break;
+                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        if (admin.BGame == null)
+                            break;
+                        admin.BGame.ExileBunkerInfos.Add(admin.BGame.BunkerInfos[int.Parse(data[1])]);
+                        admin.BGame.BunkerInfos.RemoveAt(int.Parse(data[1]));
                     }
                     break;
                 case "":
@@ -1995,7 +2087,8 @@ async void VoteResults(int gameId,ITelegramBotClient botClient, CancellationToke
                   chatId: chatId,
                   text: text,
                   cancellationToken: cancellationToken);
-
+    game.MaxVotesUsers = new(max);
+    db.SaveChanges();
     if (max.Count == 1)
     {
         List<InlineKeyboardButton> keyboardButtons = new();
@@ -2015,6 +2108,15 @@ async void VoteResults(int gameId,ITelegramBotClient botClient, CancellationToke
                   text: "Оскільки по голосам лідує більше одного гравця, зараз буде надано додатковий час на виправдання для них, після якого буде проведено повторне голосування.",
                   cancellationToken: cancellationToken);
         GiveSpeakingTimeMaxVotes(max[0], botClient, cancellationToken);
+        List<InlineKeyboardButton> keyboardButtons = new();
+        Message sentAdminMessage = await botClient.SendTextMessageAsync(
+                  chatId: game.Admin.TelegramId,
+                  text: $"Почати виправдовування?",
+                  cancellationToken: cancellationToken);
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Почати", $"'{game.Admin.Id}'.'{sentAdminMessage.MessageId}'_GiveSpeakingTimeMax"));
+        keyboardButtons.Add(InlineKeyboardButton.WithCallbackData("Редагувати голоси", $"'{game.Admin.Id}'.'{sentAdminMessage.MessageId}'_VotesMenu"));
+        InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
+        await botClient.EditMessageReplyMarkupAsync(game.Admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
 
     }
 }
@@ -3142,6 +3244,7 @@ async void BunkerCard2AdminMenu(BUser user, int cardNumber, ITelegramBotClient b
                   cancellationToken: cancellationToken);
     keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Замінити на нову", $"'{user.Id}'.'{cardNumber}'.'{sentMessage.MessageId}'_newBunkerCard"));
     keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Скинути", $"'{user.Id}'.'{cardNumber}'.'{sentMessage.MessageId}'_removeBunkerCard"));
+    keyboardButtons.Add(InlineKeyboardButton.WithCallbackData($"Віддати вигнанцям", $"'{user.Id}'.'{cardNumber}'.'{sentMessage.MessageId}'_exileBunkerCard"));
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }

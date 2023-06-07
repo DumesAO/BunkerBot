@@ -13,6 +13,7 @@ public class BGame
     public virtual List<BUser> MaxVotesUsers { get; set; } = new();
     public virtual List<BUser> VotingUsers { get; set; } = new();
     public virtual List<BunkerInfo> BunkerInfos { get; set; } = new();
+    public virtual List<BunkerInfo> ExileBunkerInfos { get; set; } = new();
     public virtual List<Hazard> Hazards { get; set; } = new();
     public virtual Catastrophe? Catastrophe { get; set; }
     public long GroupId { get; set; }
