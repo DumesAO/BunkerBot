@@ -16,6 +16,7 @@ public class Luggage
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public virtual List<BUser>? Users { get; set; } = new();
 }
 
 public class HealthCondition
@@ -46,12 +47,16 @@ public class SpecialCard
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public virtual List<BUser>? Users { get; set; } = new();
 }
 
 public class BunkerInfo
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+
+    public virtual List<BGame>? Games { get; set; } = new();
+    public virtual List<BGame>? GamesExile { get; set; } = new();
 }
 
 public class Catastrophe
@@ -64,5 +69,6 @@ public class Hazard
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public virtual List<BGame>? Games { get; set; } = new();
 }
 

@@ -12,17 +12,16 @@ public class BUser
     public long TelegramId { get; set; }
     public string Name { get; set; }
     public virtual Profession? Profession { get; set; }
-    public virtual List<Luggage> Luggages { get; set; } = new();
+    public virtual List<Luggage>? Luggages { get; set; } = new();
     public virtual Hobby? Hobby { get; set; }
     public virtual HealthCondition? HealthCondition { get; set; }
     public virtual Biology? Biology { get; set; }
     public virtual AdditionalInfo? AdditionalInfo { get; set; }
-    public virtual List<SpecialCard> SpecialCards { get; set; } = new();
+    public virtual List<SpecialCard>? SpecialCards { get; set; } = new();
     public virtual BGame? BGame { get; set; }
+    public virtual int? GameMaxVotesId { get; set; }
+    public virtual int? GameVotingId { get; set; }
     public virtual Hazard? AsignedHazard { get; set; }
-    public int MenuMessageId { get; set; } = 0;
-    public int VoteMessageId { get; set; } = 0;
-    public int SpeakingButtonMessageId { get; set; } = 0;
     public bool IsVoteDoubled { get; set; } = false;
     public bool IsVotedOut { get; set; } = false;
     public bool IsDead { get; set; } = false;
