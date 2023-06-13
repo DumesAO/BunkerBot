@@ -1,5 +1,4 @@
 ﻿using BunkerBot;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
@@ -64,7 +63,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
 
-                    StartHazards(game.Id, botClient, cancellationToken);
+                        StartHazards(game.Id, botClient, cancellationToken);
                     }
                     break;
                 case "winHazard":
@@ -74,8 +73,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (game == null)
                             break;
                         BUser admin = db.Users.Find(game.AdminId);
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         WinHazard(int.Parse(data[0]), botClient, cancellationToken);
@@ -88,8 +88,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (game == null)
                             break;
                         BUser admin = db.Users.Find(game.AdminId);
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         LoseHazard(int.Parse(data[0]), botClient, cancellationToken);
@@ -102,8 +103,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (game == null)
                             break;
                         BUser admin = db.Users.Find(game.AdminId);
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         WinHazardExile(int.Parse(data[0]), botClient, cancellationToken);
@@ -116,8 +118,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (game == null)
                             break;
                         BUser admin = db.Users.Find(game.AdminId);
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         LoseHazardExile(int.Parse(data[0]), botClient, cancellationToken);
@@ -127,8 +130,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                     {
                         var data = idData.Split(".");
                         BUser user = db.Users.Find(int.Parse(data[0]));
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user == null)
@@ -140,8 +144,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                     {
                         var data = idData.Split(".");
                         BUser user = db.Users.Find(int.Parse(data[0]));
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user == null)
@@ -153,8 +158,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                     {
                         var data = idData.Split(".");
                         BUser user = db.Users.Find(int.Parse(data[0]));
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user == null)
@@ -166,8 +172,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                     {
                         var data = idData.Split(".");
                         BUser user = db.Users.Find(int.Parse(data[0]));
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user == null)
@@ -179,8 +186,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                     {
                         var data = idData.Split(".");
                         BUser user = db.Users.Find(int.Parse(data[0]));
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user == null)
@@ -192,8 +200,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                     {
                         var data = idData.Split(".");
                         BUser user = db.Users.Find(int.Parse(data[0]));
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user == null)
@@ -205,8 +214,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                     {
                         var data = idData.Split(".");
                         BUser user = db.Users.Find(int.Parse(data[0]));
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user == null)
@@ -218,8 +228,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                     {
                         var data = idData.Split(".");
                         BUser user = db.Users.Find(int.Parse(data[0]));
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user == null)
@@ -228,7 +239,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         if (user.BGame.Status == 0)
                             break;
-                            OpenStat(user, "SecondSCard", botClient, cancellationToken);
+                        OpenStat(user, "SecondSCard", botClient, cancellationToken);
                     }
                     break;
                 case "AdminMenu":
@@ -249,8 +260,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                     {
                         var data = idData.Split(".");
                         BUser user = db.Users.Find(int.Parse(data[0]));
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user == null)
@@ -268,8 +280,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data.Last()), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data.Last()), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (data.Count() == 3)
@@ -286,8 +299,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                     {
                         var data = idData.Split(".");
                         BUser user = db.Users.Find(int.Parse(data[0]));
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user == null)
@@ -304,6 +318,22 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BGame game = user.BGame;
                         if (game == null)
                             break;
+                        if (game.RoundPart == 1)
+                        {
+                            Message sMessage = await botClient.SendTextMessageAsync(
+                                 chatId: user.TelegramId,
+                                 text: "На даному етапі раунду голосування запустити не можна",
+                                 cancellationToken: cancellationToken);
+                            break;
+                        }
+                        if (game.Status == 6)
+                        {
+                            Message sMessage = await botClient.SendTextMessageAsync(
+                                 chatId: user.TelegramId,
+                                 text: "На даному раунді голосування запустити не можна",
+                                 cancellationToken: cancellationToken);
+                            break;
+                        }
                         game.VotingUsers = new(game.Users);
                         db.SaveChanges();
                         foreach (BUser u in game.Users)
@@ -323,8 +353,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         game.VotingUsers = new(game.Users);
                         db.SaveChanges();
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         foreach (BUser u in game.Users)
@@ -342,7 +373,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        if (user.BGame.RoundPart == 2 || user.BGame.RoundPart == 3)
+                        if (user.BGame.RoundPart == 2 || user.BGame.RoundPart == 3 || user.BGame.RoundPart == 4)
                         {
                             user.VotedFor = user2;
                             user.BGame.VotingUsers.Remove(user);
@@ -363,8 +394,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                                  text: "Нема активного голосування",
                                  cancellationToken: cancellationToken);
                         }
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                     }
@@ -378,7 +410,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        if (user.BGame.RoundPart == 2 || user.BGame.RoundPart == 3)
+                        if (user.BGame.RoundPart == 2 || user.BGame.RoundPart == 3 || user.BGame.RoundPart == 4)
                         {
                             user.VotedFor = user2;
                             user.BGame.VotingUsers.Remove(user);
@@ -399,8 +431,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                                  text: "Нема активного голосування",
                                  cancellationToken: cancellationToken);
                         }
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                     }
@@ -414,17 +447,21 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         user.IsVotedOut = true;
-                        user.BGame.RoundPart = user.BGame.Status == 3 ? 4 : 3;
                         db.SaveChanges();
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
+                        if (user.BGame.RoundPart == 2)
+                        {
+                            user.BGame.RoundPart = 3; db.SaveChanges();
+                        }
                         Message sMessage = await botClient.SendTextMessageAsync(
                                  chatId: user.BGame.GroupId,
                                  text: $"{user.Name} тепер вигнанець",
                                  cancellationToken: cancellationToken);
-                        if (user.BGame.VotingList.roundVotings[user.BGame.Status] == 2)
+                        if (user.BGame.VotingList.roundVotings[user.BGame.Status] == '2')
                         {
                             if (user.BGame.RoundPart == 4)
                             {
@@ -441,6 +478,8 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                                 {
                                     VoteMenu(u, botClient, cancellationToken);
                                 }
+                                user.BGame.RoundPart = 4;
+                                db.SaveChanges();
                                 break;
                             }
                         }
@@ -466,9 +505,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
-                        
-                        
-                        
+
+
+
                         EndSpeaking(user.BGame, botClient, cancellationToken);
                     }
                     break;
@@ -481,13 +520,14 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         BUser admin = db.Users.Find(user.BGame.AdminId);
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
-                            }
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        }
                         catch { Console.WriteLine("Message not found to delete"); }
-                    
-                        
+
+
                         EndSpeakingMaxVotes(user.BGame, botClient, cancellationToken);
                     }
                     break;
@@ -499,8 +539,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         if (user.BGame == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         GiveSpeakingTimeMaxVotes(user.BGame.MaxVotesUsers[0], botClient, cancellationToken);
@@ -512,8 +553,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -549,8 +591,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -565,8 +608,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -580,8 +624,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -595,8 +640,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -610,8 +656,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -625,8 +672,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -640,8 +688,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -655,8 +704,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -670,8 +720,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -688,8 +739,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -706,8 +758,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -721,13 +774,14 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
                             break;
-                        BUser admin= db.Users.Find(user.BGame.AdminId);
+                        BUser admin = db.Users.Find(user.BGame.AdminId);
                         GiveNewCard(user.Id, "Profession");
                         MainMenu(admin, botClient, cancellationToken);
                     }
@@ -738,8 +792,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -755,8 +810,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -772,8 +828,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -789,8 +846,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -806,8 +864,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -823,8 +882,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -843,8 +903,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -864,8 +925,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[2]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[3]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[3]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -882,8 +944,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -902,8 +965,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -922,8 +986,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -942,8 +1007,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -962,8 +1028,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -982,8 +1049,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1002,8 +1070,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1022,8 +1091,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1039,8 +1109,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1055,8 +1126,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1071,8 +1143,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1087,8 +1160,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1103,8 +1177,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1119,8 +1194,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1138,8 +1214,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1156,8 +1233,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1173,8 +1251,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser admin = db.Users.Find(int.Parse(data[0]));
                         if (admin == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1188,8 +1267,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser admin = db.Users.Find(int.Parse(data[0]));
                         if (admin == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1204,8 +1284,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser admin = db.Users.Find(int.Parse(data[0]));
                         if (admin == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1228,8 +1309,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser newAdmin = db.Users.Find(int.Parse(data[1]));
                         if (newAdmin == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1248,9 +1330,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[3]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[3]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1267,8 +1350,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1285,8 +1369,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1305,8 +1390,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1325,8 +1411,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1345,8 +1432,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1365,9 +1453,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[3]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[3]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1384,8 +1473,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1402,8 +1492,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1422,8 +1513,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1442,8 +1534,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1459,8 +1552,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user = db.Users.Find(int.Parse(data[0]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(user.TelegramId, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1477,8 +1571,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser user2 = db.Users.Find(int.Parse(data[1]));
                         if (user == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (user.BGame == null)
@@ -1494,8 +1589,9 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         BUser admin = db.Users.Find(int.Parse(data[0]));
                         if (admin == null)
                             break;
-                        try { 
-                        await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
+                        try
+                        {
+                            await botClient.DeleteMessageAsync(admin.TelegramId, int.Parse(data[2]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
@@ -1539,6 +1635,13 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                     Message sentMessage = await botClient.SendTextMessageAsync(
                         chatId: chatId,
                         text: $"Ти успішно приєднався до гри в чаті \"{chatTitle}\"",
+                        cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    Message sentMessage = await botClient.SendTextMessageAsync(
+                        chatId: chatId,
+                        text: $"Помилка приєднання",
                         cancellationToken: cancellationToken);
                 }
                 Console.WriteLine($"Received a {message.Text} message in chat {chatId}.");
@@ -1615,11 +1718,11 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
         if (update.Message.Chat.Type == ChatType.Supergroup || update.Message.Chat.Type == ChatType.Group)
         {
             var chatId = update.Message.Chat.Id;
-            string[] m= message.Text.Split($"@{botClient.GetMeAsync().Result.Username}");
+            string[] m = message.Text.Split($"@{botClient.GetMeAsync().Result.Username}");
             string m2 = "";
-            foreach(var i in m)
+            foreach (var i in m)
             {
-                m2+= i;
+                m2 += i;
             }
             switch (m2.Trim())
             {
@@ -1630,7 +1733,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                     break;
                 case "/startgame":
                     {
-                        
+
                         BGame game = GetGame(chatId);
                         if (game != null)
                         {
@@ -1721,7 +1824,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
 
         }
     }
-    
+
 
 }
 Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -1809,7 +1912,7 @@ bool LeaveUser(long chatId)
     user.AsignedHazard = null;
     if (user.Id == game.AdminId)
     {
-        if(game.Users.Count!=0)
+        if (game.Users.Count != 0)
             game.AdminId = game.Users[0].Id;
     }
     UpdateGameMembersList(game.GroupId);
@@ -2043,7 +2146,7 @@ void GiveGameStats(int gameId)
         game.Hazards.Add(hazards[i]);
         hazards.RemoveAt(i);
     }
-    for(int j = 0; j < 5; j++)
+    for (int j = 0; j < 5; j++)
     {
         i = Random.Shared.Next(0, bunkerInfos.Count);
         game.BunkerInfos.Add(bunkerInfos[i]);
@@ -2058,7 +2161,7 @@ async void NewRound(int gameId, ITelegramBotClient botClient, CancellationToken 
     if (game == null)
         return;
     game.Status++;
-    foreach(BUser u in game.Users)
+    foreach (BUser u in game.Users)
     {
         u.IsVoteDoubled = false;
     }
@@ -2105,7 +2208,7 @@ async void NewRound(int gameId, ITelegramBotClient botClient, CancellationToken 
             }
         }
     }
-    
+
 }
 async void StartHazards(int gameId, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
@@ -2264,7 +2367,7 @@ async void SendHazard(int gameId, ITelegramBotClient botClient, CancellationToke
                                  chatId: game.GroupId,
                                  text: $"Загроза:\n {user.AsignedHazard.Name}",
                                  cancellationToken: cancellationToken);
-    
+
     BUser admin = db.Users.Find(user.BGame.AdminId);
     Message sentAdminMessage = await botClient.SendTextMessageAsync(
           chatId: admin.TelegramId,
@@ -2388,7 +2491,7 @@ async void SendStatsToAll(int gameId, ITelegramBotClient botClient, Cancellation
                                  chatId: game.GroupId,
                                  text: $"Гра починаєтся\n Катастрофа:\n {game.Catastrophe.Name}",
                                  cancellationToken: cancellationToken);
-    NewRound(gameId,botClient,cancellationToken);
+    NewRound(gameId, botClient, cancellationToken);
 
 }
 async void MainMenu(BUser user, ITelegramBotClient botClient, CancellationToken cancellationToken)
@@ -2423,53 +2526,53 @@ async void MainMenu(BUser user, ITelegramBotClient botClient, CancellationToken 
     if (!user.ProfessionOpened)
     {
         ProfMarker = "🔓";
-        if((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
-            keyboardButtons.Add(new[] {InlineKeyboardButton.WithCallbackData("Розкрити професію", $"{user.Id}.{sentMessage.MessageId}_openProfession") });
+        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
+            keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити професію", $"{user.Id}.{sentMessage.MessageId}_openProfession") });
     }
     if (!user.BiologyOpened)
     {
 
         BioMarker = "🔓";
         if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
-            keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Розкрити біологію", $"{user.Id}.{sentMessage.MessageId}_openBiology") });
+            keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити біологію", $"{user.Id}.{sentMessage.MessageId}_openBiology") });
     }
     if (!user.HealthConditionOpened)
     {
         HealthMarker = "🔓";
         if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
-            keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Розкрити стан здоров'я", $"{user.Id}.{sentMessage.MessageId}_openHealth") });
+            keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити стан здоров'я", $"{user.Id}.{sentMessage.MessageId}_openHealth") });
     }
     if (!user.HobbyOpened)
     {
         HobbyMarker = "🔓";
         if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
-            keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Розкрити хоббі", $"{user.Id}.{sentMessage.MessageId}_openHobby") });
+            keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити хоббі", $"{user.Id}.{sentMessage.MessageId}_openHobby") });
     }
     if (!user.LuggagesOpened)
     {
         LugMarker = "🔓";
         if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
-            keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Розкрити багаж", $"{user.Id}.{sentMessage.MessageId}_openLuggage") });
+            keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити багаж", $"{user.Id}.{sentMessage.MessageId}_openLuggage") });
     }
     if (!user.AdditionalInfoOpened)
     {
         InfoMarker = "🔓";
         if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
-            keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Розкрити факт", $"{user.Id}.{sentMessage.MessageId}_openAddInfo") });
+            keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити факт", $"{user.Id}.{sentMessage.MessageId}_openAddInfo") });
     }
     if (!user.FirstSpecialCardUsed)
     {
         FCardMarker = "🔓";
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Розкрити спеціальну карту", $"{user.Id}.{sentMessage.MessageId}_openFirstSCard") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити спеціальну карту", $"{user.Id}.{sentMessage.MessageId}_openFirstSCard") });
     }
     if (user.SpecialCards.Count > 1 && !user.SecondSpecialCardUsed)
     {
         SCardMarker = "🔓";
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Розкрити ДОДАТКОВУ спеціальну карту", $"{user.Id}.{sentMessage.MessageId}_openSecondSCard") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити ДОДАТКОВУ спеціальну карту", $"{user.Id}.{sentMessage.MessageId}_openSecondSCard") });
     }
     if (user.BGame.AdminId == user.Id)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Меню Адміністратора", $"{user.Id}.{sentMessage.MessageId}_AdminMenu") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Меню Адміністратора", $"{user.Id}.{sentMessage.MessageId}_AdminMenu") });
     }
     keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Персонажі гравців", $"{user.Id}.{sentMessage.MessageId}_CharactersMenu"),
     InlineKeyboardButton.WithCallbackData("Інформація про бункер та катастрофу", $"{user.Id}.{sentMessage.MessageId}_GameInfoMenu")});
@@ -2487,7 +2590,11 @@ async void VoteMenu(BUser user, ITelegramBotClient botClient, CancellationToken 
                   cancellationToken: cancellationToken);
     foreach (BUser u in user.BGame.Users)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_vote") });
+        if (!u.IsVotedOut)
+        {
+            keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_vote") });
+        }
+
     }
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
@@ -2500,9 +2607,12 @@ async void VoteMenuMax(BUser user, ITelegramBotClient botClient, CancellationTok
                   chatId: chatId,
                   text: "Оберіть гравця, проти якого голосуєте",
                   cancellationToken: cancellationToken);
-    foreach (BUser u in user.BGame.Users)
+    foreach (BUser u in user.BGame.MaxVotesUsers)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_voteMax") });
+        if (!u.IsVotedOut)
+        {
+            keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_voteMax") });
+        }
     }
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
@@ -2571,8 +2681,8 @@ async void VoteResults(int gameId, ITelegramBotClient botClient, CancellationTok
                   chatId: admin.TelegramId,
                   text: $"Вигнати {max[0].Name}?",
                   cancellationToken: cancellationToken);
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Підтвердити", $"{max[0].Id}.{sentAdminMessage.MessageId}_voteOut") });
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Редагувати голоси", $"{admin.Id}.{sentAdminMessage.MessageId}_VotesMenu") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Підтвердити", $"{max[0].Id}.{sentAdminMessage.MessageId}_voteOut") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Редагувати голоси", $"{admin.Id}.{sentAdminMessage.MessageId}_VotesMenu") });
         InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
         await botClient.EditMessageReplyMarkupAsync(admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
     }
@@ -2588,8 +2698,8 @@ async void VoteResults(int gameId, ITelegramBotClient botClient, CancellationTok
                   chatId: admin.TelegramId,
                   text: "Почати виправдовування?",
                   cancellationToken: cancellationToken);
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Почати", $"{admin.Id}.{sentAdminMessage.MessageId}_giveSpeakingTimeMax") });
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Редагувати голоси", $"{admin.Id}.{sentAdminMessage.MessageId}_VotesMenu") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Почати", $"{admin.Id}.{sentAdminMessage.MessageId}_giveSpeakingTimeMax") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Редагувати голоси", $"{admin.Id}.{sentAdminMessage.MessageId}_VotesMenu") });
         InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
         await botClient.EditMessageReplyMarkupAsync(admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
 
@@ -2655,8 +2765,8 @@ async void VoteResultsMax(int gameId, ITelegramBotClient botClient, Cancellation
                   chatId: admin.TelegramId,
                   text: $"Вигнати {max[0].Name}?",
                   cancellationToken: cancellationToken);
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Підтвердити", $"{max[0].Id}.{sentAdminMessage.MessageId}_voteOut") });
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Редагувати голоси", $"{admin.Id}.{sentAdminMessage.MessageId}_VotesMenuMax") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Підтвердити", $"{max[0].Id}.{sentAdminMessage.MessageId}_voteOut") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Редагувати голоси", $"{admin.Id}.{sentAdminMessage.MessageId}_VotesMenuMax") });
         InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
         await botClient.EditMessageReplyMarkupAsync(admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
     }
@@ -2673,8 +2783,8 @@ async void VoteResultsMax(int gameId, ITelegramBotClient botClient, Cancellation
                   chatId: admin.TelegramId,
                   text: $"Вигнати {max[i].Name}?",
                   cancellationToken: cancellationToken);
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Підтвердити", $"{max[i].Id}.{sentAdminMessage.MessageId}_voteOut") });
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Редагувати голоси", $"{admin.Id}.{sentAdminMessage.MessageId}_VotesMenuMax") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Підтвердити", $"{max[i].Id}.{sentAdminMessage.MessageId}_voteOut") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Редагувати голоси", $"{admin.Id}.{sentAdminMessage.MessageId}_VotesMenuMax") });
         InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
         await botClient.EditMessageReplyMarkupAsync(admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
 
@@ -2706,10 +2816,10 @@ async void EndSpeaking(BGame game, ITelegramBotClient botClient, CancellationTok
                 cancellationToken: cancellationToken);
             game.SpeakerId = 0;
             db.SaveChanges();
-            
+
             if (int.Parse($"{game.VotingList.roundVotings[game.Status]}") == 0)
             {
-                
+
                 sentMessage = await botClient.SendTextMessageAsync(
                     chatId: game.GroupId,
                     text: "В даному раунді голосувань не повинно бути, тому коли гравці домоавлятся Ведучий може почати наступний раунд",
@@ -2720,7 +2830,7 @@ async void EndSpeaking(BGame game, ITelegramBotClient botClient, CancellationTok
                     chatId: admin.TelegramId,
                     text: "Наступний раунд",
                     cancellationToken: cancellationToken);
-                keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Почати", $"{admin.Id}.{sentAdminMessage.MessageId}_startNewRound") });
+                keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Почати", $"{admin.Id}.{sentAdminMessage.MessageId}_startNewRound") });
                 InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
                 await botClient.EditMessageReplyMarkupAsync(admin.TelegramId, sentAdminMessage.MessageId, inlineKeyboard);
             }
@@ -2786,7 +2896,7 @@ async void GiveSpeakingTimeMaxVotes(BUser user, ITelegramBotClient botClient, Ca
 }
 async void EndSpeakingMaxVotes(BGame game, ITelegramBotClient botClient, CancellationToken cancellationToken)
 {
-        for (int i = 0; i < game.MaxVotesUsers.Count; i++)
+    for (int i = 0; i < game.MaxVotesUsers.Count; i++)
     {
         if (game.MaxVotesUsers[i].TelegramId == game.SpeakerId)
         {
@@ -2812,7 +2922,7 @@ async void EndSpeakingMaxVotes(BGame game, ITelegramBotClient botClient, Cancell
             }
             else
             {
-                GiveSpeakingTimeMaxVotes(game.MaxVotesUsers[i+1], botClient, cancellationToken);
+                GiveSpeakingTimeMaxVotes(game.MaxVotesUsers[i + 1], botClient, cancellationToken);
             }
             return;
         }
@@ -2827,7 +2937,7 @@ async void CharactersMenu(BUser user, int index, ITelegramBotClient botClient, C
     if (user.BGame == null)
         return;
     BUser u = game.Users[index];
-    text += $"{index+1} {u.Name}";
+    text += $"{index + 1} {u.Name}";
     if (u.IsVotedOut)
     {
         text += "Вигнанець ";
@@ -2920,13 +3030,13 @@ async void CharactersMenu(BUser user, int index, ITelegramBotClient botClient, C
                   cancellationToken: cancellationToken);
     if (index > 0)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("⬅️", $"{user.Id}.{index - 1}.{sentMessage.MessageId}_CharactersMenu") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("⬅️", $"{user.Id}.{index - 1}.{sentMessage.MessageId}_CharactersMenu") });
     }
     if (index < user.BGame.Users.Count - 1)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("➡️", $"{user.Id}.{index + 1}.{sentMessage.MessageId}_CharactersMenu") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("➡️", $"{user.Id}.{index + 1}.{sentMessage.MessageId}_CharactersMenu") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(user.TelegramId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -2947,7 +3057,7 @@ async void GameInfoMenu(BUser user, ITelegramBotClient botClient, CancellationTo
                   chatId: user.TelegramId,
                   text: text,
                   cancellationToken: cancellationToken);
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(user.TelegramId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3501,9 +3611,9 @@ async void SendOpenCardAdminMenu(BUser user, ITelegramBotClient botClient, Cance
                   cancellationToken: cancellationToken);
     foreach (BUser u in user.BGame.Users)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_OpenCard2Menu") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_OpenCard2Menu") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3517,37 +3627,37 @@ async void SendOpenCard2AdminMenu(BUser admin, BUser target, ITelegramBotClient 
                   cancellationToken: cancellationToken);
     if (!target.ProfessionOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Професія", $"{target.Id}.{sentMessage.MessageId}_openProfession") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Професія", $"{target.Id}.{sentMessage.MessageId}_openProfession") });
     }
     if (!target.BiologyOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Біологія", $"{target.Id}.{sentMessage.MessageId}_openBiology") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Біологія", $"{target.Id}.{sentMessage.MessageId}_openBiology") });
     }
     if (!target.HealthConditionOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Стан здоров'я", $"{target.Id}.{sentMessage.MessageId}_openHealth") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Стан здоров'я", $"{target.Id}.{sentMessage.MessageId}_openHealth") });
     }
     if (!target.HobbyOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Хоббі", $"{target.Id}.{sentMessage.MessageId}_openHobby") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Хоббі", $"{target.Id}.{sentMessage.MessageId}_openHobby") });
     }
     if (!target.LuggagesOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Багаж", $"{target.Id}.{sentMessage.MessageId}_openLuggage") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Багаж", $"{target.Id}.{sentMessage.MessageId}_openLuggage") });
     }
     if (!target.AdditionalInfoOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Факт", $"{target.Id}.{sentMessage.MessageId}_openAddInfo") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Факт", $"{target.Id}.{sentMessage.MessageId}_openAddInfo") });
     }
     if (!target.FirstSpecialCardUsed)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Спеціальна карта", $"{target.Id}.{sentMessage.MessageId}_openFirstSCard") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Спеціальна карта", $"{target.Id}.{sentMessage.MessageId}_openFirstSCard") });
     }
     if (target.SpecialCards.Count > 1 && !target.SecondSpecialCardUsed)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("ДОДАТКОВА спеціальна карта", $"{target.Id}.{sentMessage.MessageId}_openSecondSCard") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("ДОДАТКОВА спеціальна карта", $"{target.Id}.{sentMessage.MessageId}_openSecondSCard") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData("Повернутися до вибору гравця", $"{admin.Id}.{sentMessage.MessageId}_OpenCardMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Повернутися до вибору гравця", $"{admin.Id}.{sentMessage.MessageId}_OpenCardMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3562,9 +3672,9 @@ async void SendNewCardAdminMenu(BUser user, ITelegramBotClient botClient, Cancel
                   cancellationToken: cancellationToken);
     foreach (BUser u in user.BGame.Users)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_ChangeCard2Menu") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_ChangeCard2Menu") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3579,33 +3689,33 @@ async void SendNewCard2AdminMenu(BUser admin, BUser target, ITelegramBotClient b
                   cancellationToken: cancellationToken);
     if (target.ProfessionOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Професія {target.Profession.Name}", $"{target.Id}.{sentMessage.MessageId}_changeProfession") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Професія {target.Profession.Name}", $"{target.Id}.{sentMessage.MessageId}_changeProfession") });
     }
     if (target.BiologyOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Біологія {target.Biology.Name}", $"{target.Id}.{sentMessage.MessageId}_changeBiology") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Біологія {target.Biology.Name}", $"{target.Id}.{sentMessage.MessageId}_changeBiology") });
     }
     if (target.HealthConditionOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Стан здоров'я {target.HealthCondition.Name}", $"{target.Id}.{sentMessage.MessageId}_changeHealth") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Стан здоров'я {target.HealthCondition.Name}", $"{target.Id}.{sentMessage.MessageId}_changeHealth") });
     }
     if (target.HobbyOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Хоббі {target.Hobby.Name}", $"{target.Id}.{sentMessage.MessageId}_changeHobby") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Хоббі {target.Hobby.Name}", $"{target.Id}.{sentMessage.MessageId}_changeHobby") });
     }
     if (target.LuggagesOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Багаж {target.Luggages[0].Name}", $"{target.Id}.{sentMessage.MessageId}_changeFirstLuggage") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Багаж {target.Luggages[0].Name}", $"{target.Id}.{sentMessage.MessageId}_changeFirstLuggage") });
     }
     if (target.Luggages.Count > 1)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Додатковий Багаж {target.Luggages[1].Name}", $"{target.Id}.{sentMessage.MessageId}_changeSecondLuggage") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Додатковий Багаж {target.Luggages[1].Name}", $"{target.Id}.{sentMessage.MessageId}_changeSecondLuggage") });
     }
     if (target.AdditionalInfoOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Факт {target.AdditionalInfo.Name}", $"{target.Id}.{sentMessage.MessageId}_changeAddInfo") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Факт {target.AdditionalInfo.Name}", $"{target.Id}.{sentMessage.MessageId}_changeAddInfo") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Повернутися до вибору гравця", $"{admin.Id}.{sentMessage.MessageId}_ChangeCardMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Повернутися до вибору гравця", $"{admin.Id}.{sentMessage.MessageId}_ChangeCardMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3621,9 +3731,9 @@ async void SwapCardAdminMenu(BUser user, ITelegramBotClient botClient, Cancellat
                   cancellationToken: cancellationToken);
     foreach (BUser u in user.BGame.Users)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_SwapCard2Menu") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_SwapCard2Menu") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3639,10 +3749,10 @@ async void SwapCard2AdminMenu(BUser admin, BUser target1, ITelegramBotClient bot
     {
         if (u != target1)
         {
-            keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{admin.Id}.{u.Id}.{target1.Id}.{sentMessage.MessageId}_SwapCard3Menu") });
+            keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{admin.Id}.{u.Id}.{target1.Id}.{sentMessage.MessageId}_SwapCard3Menu") });
         }
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Повернутися до вибору 1 гравця", $"{admin.Id}.{sentMessage.MessageId}_SwapCardsMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Повернутися до вибору 1 гравця", $"{admin.Id}.{sentMessage.MessageId}_SwapCardsMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3657,37 +3767,37 @@ async void SwapCard3AdminMenu(BUser admin, BUser target1, BUser target2, ITelegr
                   cancellationToken: cancellationToken);
     if (target1.ProfessionOpened && target2.ProfessionOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Професія ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swapProfession") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Професія ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swapProfession") });
     }
     if (target1.BiologyOpened && target2.BiologyOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Біологія ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swapBiology") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Біологія ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swapBiology") });
     }
     if (target1.HealthConditionOpened && target2.HealthConditionOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Стан здоров'я ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swapHealth") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Стан здоров'я ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swapHealth") });
     }
     if (target1.HobbyOpened && target2.HobbyOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Хоббі ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swapHobby") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Хоббі ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swapHobby") });
     }
     if (target1.LuggagesOpened && target2.LuggagesOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Основний багаж {target1.Name} та основний багаж {target2.Name} ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swap11Luggage") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Основний багаж {target1.Name} та основний багаж {target2.Name} ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swap11Luggage") });
     }
     if (target1.LuggagesOpened && target2.Luggages.Count > 1)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Основний багаж {target1.Name} та додатковий багаж {target2.Name} ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swap12Luggage") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Основний багаж {target1.Name} та додатковий багаж {target2.Name} ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swap12Luggage") });
     }
     if (target1.Luggages.Count > 1 && target2.LuggagesOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Додатковий багаж {target1.Name} та основний багаж {target2.Name} ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swap21Luggage") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Додатковий багаж {target1.Name} та основний багаж {target2.Name} ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swap21Luggage") });
     }
     if (target1.AdditionalInfoOpened && target2.AdditionalInfoOpened)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Факт ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swapAddInfo") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Факт ", $"{target1.Id}.{target2.Id}.{sentMessage.MessageId}_swapAddInfo") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Повернутися до вибору гравців", $"{admin.Id}.{sentMessage.MessageId}_SwapCardsMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Повернутися до вибору гравців", $"{admin.Id}.{sentMessage.MessageId}_SwapCardsMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3700,13 +3810,13 @@ async void ShuffleCardAdminMenu(BUser user, ITelegramBotClient botClient, Cancel
                   chatId: chatId,
                   text: $"Оберіть характеристику",
                   cancellationToken: cancellationToken);
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Всі відкриті професії", $"{user.Id}.{sentMessage.MessageId}_shuffleProfession") });
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Вся відкрита біологія", $"{user.Id}.{sentMessage.MessageId}_shuffleBiology") });
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Всі відкриті стани здоров'я", $"{user.Id}.{sentMessage.MessageId}_shuffleHealth") });
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Всі відкриті хоббі ", $"{user.Id}.{sentMessage.MessageId}_shuffleHobby") });
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Всі відкриті багажі", $"{user.Id}.{sentMessage.MessageId}_shuffleLuggage") });
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Всі відкриті факти ", $"{user.Id}.{sentMessage.MessageId}_shuffleAddInfo") });
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Всі відкриті професії", $"{user.Id}.{sentMessage.MessageId}_shuffleProfession") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Вся відкрита біологія", $"{user.Id}.{sentMessage.MessageId}_shuffleBiology") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Всі відкриті стани здоров'я", $"{user.Id}.{sentMessage.MessageId}_shuffleHealth") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Всі відкриті хоббі ", $"{user.Id}.{sentMessage.MessageId}_shuffleHobby") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Всі відкриті багажі", $"{user.Id}.{sentMessage.MessageId}_shuffleLuggage") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Всі відкриті факти ", $"{user.Id}.{sentMessage.MessageId}_shuffleAddInfo") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3721,9 +3831,9 @@ async void StealLuggageAdminMenu(BUser user, ITelegramBotClient botClient, Cance
                   cancellationToken: cancellationToken);
     foreach (BUser u in user.BGame.Users)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_StealLuggage2Menu") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_StealLuggage2Menu") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3741,11 +3851,11 @@ async void StealLuggage2AdminMenu(BUser admin, BUser stealer, ITelegramBotClient
         {
             if (u.LuggagesOpened)
             {
-                keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Luggages[0].Name} у {u.Name}", $"{stealer.Id}.{u.Id}.{sentMessage.MessageId}_stealLuggage") });
+                keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Luggages[0].Name} у {u.Name}", $"{stealer.Id}.{u.Id}.{sentMessage.MessageId}_stealLuggage") });
             }
         }
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Повернутися до вибору крадія", $"{admin.Id}.{sentMessage.MessageId}_StealLuggageMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Повернутися до вибору крадія", $"{admin.Id}.{sentMessage.MessageId}_StealLuggageMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3763,7 +3873,7 @@ async void BunkerCardAdminMenu(BUser user, ITelegramBotClient botClient, Cancell
     {
         if (i > 4)
             continue;
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{user.BGame.BunkerInfos[i].Name}", $"{user.Id}.{i}.{sentMessage.MessageId}_BunkerCard2Menu") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{user.BGame.BunkerInfos[i].Name}", $"{user.Id}.{i}.{sentMessage.MessageId}_BunkerCard2Menu") });
     }
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
@@ -3776,9 +3886,9 @@ async void BunkerCard2AdminMenu(BUser user, int cardNumber, ITelegramBotClient b
                   chatId: chatId,
                   text: $"\"{user.BGame.BunkerInfos[cardNumber].Name}\"\n Що зробити з картою?",
                   cancellationToken: cancellationToken);
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Замінити на нову", $"{user.Id}.{cardNumber}.{sentMessage.MessageId}_newBunkerCard") });
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Скинути", $"{user.Id}.{cardNumber}.{sentMessage.MessageId}_removeBunkerCard") });
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Віддати вигнанцям", $"{user.Id}.{cardNumber}.{sentMessage.MessageId}_exileBunkerCard") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Замінити на нову", $"{user.Id}.{cardNumber}.{sentMessage.MessageId}_newBunkerCard") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Скинути", $"{user.Id}.{cardNumber}.{sentMessage.MessageId}_removeBunkerCard") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Віддати вигнанцям", $"{user.Id}.{cardNumber}.{sentMessage.MessageId}_exileBunkerCard") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3794,9 +3904,9 @@ async void GiveAdminMenu(BUser user, ITelegramBotClient botClient, CancellationT
                   cancellationToken: cancellationToken);
     foreach (BUser u in user.BGame.Users)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_giveAdmin") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_giveAdmin") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sentMessage.MessageId}_MainMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3831,9 +3941,9 @@ async void VotesAdminMenu(BUser user, ITelegramBotClient botClient, Cancellation
                   cancellationToken: cancellationToken);
     foreach (BUser u in user.BGame.Users)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sent1Message.MessageId}.{sent2Message.MessageId}_Votes2AdminMenu") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sent1Message.MessageId}.{sent2Message.MessageId}_Votes2AdminMenu") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sent1Message.MessageId}.{sent2Message.MessageId}_MainMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sent1Message.MessageId}.{sent2Message.MessageId}_MainMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sent2Message.MessageId, inlineKeyboard);
 }
@@ -3845,11 +3955,11 @@ async void Votes2AdminMenu(BUser admin, BUser user, ITelegramBotClient botClient
                   chatId: chatId,
                   text: "Що бажаєте зробити з голосом",
                   cancellationToken: cancellationToken);
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Зміна вибору", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_Votes3AdminMenu") });
-    
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Подвоєння голосу", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_doubleVote") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Зміна вибору", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_Votes3AdminMenu") });
+
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Подвоєння голосу", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_doubleVote") });
     keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Відміна Подвоєння голосу", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_cancelDoubleVote") });
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Відміна голосу", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_cancelVote") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Відміна голосу", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_cancelVote") });
     keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Повернутися", $"{admin.Id}.{sentMessage.MessageId}_VotesMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
@@ -3865,9 +3975,9 @@ async void Votes3AdminMenu(BUser admin, BUser user, ITelegramBotClient botClient
                   cancellationToken: cancellationToken);
     foreach (BUser u in user.BGame.Users)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_voteAdmin") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_voteAdmin") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Повернутися", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_Votes2AdminMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Повернутися", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_Votes2AdminMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3902,9 +4012,9 @@ async void VotesMaxAdminMenu(BUser user, ITelegramBotClient botClient, Cancellat
                   cancellationToken: cancellationToken);
     foreach (BUser u in user.BGame.Users)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sent1Message.MessageId}.{sent2Message.MessageId}_VotesMax2AdminMenu") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sent1Message.MessageId}.{sent2Message.MessageId}_VotesMax2AdminMenu") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sent1Message.MessageId}.{sent2Message.MessageId}_MainMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Головне меню", $"{user.Id}.{sent1Message.MessageId}.{sent2Message.MessageId}_MainMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sent2Message.MessageId, inlineKeyboard);
 }
@@ -3916,11 +4026,11 @@ async void VotesMax2AdminMenu(BUser admin, BUser user, ITelegramBotClient botCli
                   chatId: chatId,
                   text: "Що бажаєте зробити з голосом",
                   cancellationToken: cancellationToken);
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Зміна вибору", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_VotesMax3AdminMenu") });
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Подвоєння голосу", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_doubleVoteMax") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Зміна вибору", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_VotesMax3AdminMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Подвоєння голосу", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_doubleVoteMax") });
     keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Відміна Подвоєння голосу", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_cancelDoubleVoteMax") });
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Відміна голосу", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_cancelVoteMax") });
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Повернутися", $"{admin.Id}.{sentMessage.MessageId}_VotesMaxMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Відміна голосу", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_cancelVoteMax") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Повернутися", $"{admin.Id}.{sentMessage.MessageId}_VotesMaxMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
     await botClient.EditMessageReplyMarkupAsync(chatId, sentMessage.MessageId, inlineKeyboard);
 }
@@ -3935,8 +4045,8 @@ async void VotesMax3AdminMenu(BUser admin, BUser user, ITelegramBotClient botCli
                   cancellationToken: cancellationToken);
     foreach (BUser u in user.BGame.Users)
     {
-        keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_voteAdminMax") });
+        keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"{u.Name}", $"{user.Id}.{u.Id}.{sentMessage.MessageId}_voteAdminMax") });
     }
-    keyboardButtons.Add(new[]{InlineKeyboardButton.WithCallbackData($"Повернутися", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_VotesMax2AdminMenu") });
+    keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData($"Повернутися", $"{admin.Id}.{user.Id}.{sentMessage.MessageId}_VotesMax2AdminMenu") });
     InlineKeyboardMarkup inlineKeyboard = new(keyboardButtons);
 }

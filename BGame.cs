@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BunkerBot;
+﻿namespace BunkerBot;
 
 public class BGame
 {
@@ -30,5 +24,5 @@ public class BGame
 public class VotingList
 {
     public int Id { get; set; }
-    public string roundVotings { get; set; }=String.Empty;
+    public string roundVotings { get; set; } = String.Empty;
 }

@@ -1,10 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 
 namespace BunkerBot;
 
@@ -30,7 +24,7 @@ internal class AppDbContext : DbContext
     {
 
     }
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) 
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
 
     }
@@ -48,7 +42,6 @@ internal class AppDbContext : DbContext
             .HasMany(g => g.MaxVotesUsers)
             .WithOne()
             .HasForeignKey(u => u.GameMaxVotesId);
-
         modelBuilder.Entity<BGame>()
             .HasMany(g => g.VotingUsers)
             .WithOne()
