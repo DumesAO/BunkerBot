@@ -334,6 +334,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                                  cancellationToken: cancellationToken);
                             break;
                         }
+                        Message s1Message = await botClient.SendTextMessageAsync(
+                                 chatId: game.GroupId,
+                                 text: "Починається голосування",
+                                 cancellationToken: cancellationToken);
                         game.VotingUsers = new(game.Users);
                         db.SaveChanges();
                         foreach (BUser u in game.Users)
@@ -358,6 +362,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             await botClient.DeleteMessageAsync(callback.From.Id, int.Parse(data[1]), cancellationToken);
                         }
                         catch { Console.WriteLine("Message not found to delete"); }
+                        Message s1Message = await botClient.SendTextMessageAsync(
+                                 chatId: game.GroupId,
+                                 text: "Починається повторне голосування",
+                                 cancellationToken: cancellationToken);
                         foreach (BUser u in game.Users)
                         {
                             VoteMenuMax(u, botClient, cancellationToken);
@@ -782,7 +790,12 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         BUser admin = db.Users.Find(user.BGame.AdminId);
+                       
                         GiveNewCard(user.Id, "Profession");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} змінив професію {user.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -801,6 +814,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         BUser admin = db.Users.Find(user.BGame.AdminId);
                         GiveNewCard(user.Id, "Biology");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} змінив біологію {user.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -819,6 +836,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         BUser admin = db.Users.Find(user.BGame.AdminId);
                         GiveNewCard(user.Id, "Health");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} змінив стан здоров'я {user.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -837,6 +858,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         BUser admin = db.Users.Find(user.BGame.AdminId);
                         GiveNewCard(user.Id, "Hobby");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} змінив хоббі {user.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -855,6 +880,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         BUser admin = db.Users.Find(user.BGame.AdminId);
                         GiveNewCard(user.Id, "FirstLuggage");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} змінив багаж {user.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -873,6 +902,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         BUser admin = db.Users.Find(user.BGame.AdminId);
                         GiveNewCard(user.Id, "SecondLuggage");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} змінив додатковий багаж {user.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -891,6 +924,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         BUser admin = db.Users.Find(user.BGame.AdminId);
                         GiveNewCard(user.Id, "AddInfo");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} змінив факт {user.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -953,6 +990,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         SwapCards(user.Id, user2.Id, "Profession");
                         BUser admin = db.Users.Find(user.BGame.AdminId);
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} обміняв професії {user.Name} та {user2.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -974,6 +1015,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         SwapCards(user.Id, user2.Id, "Biology");
                         BUser admin = db.Users.Find(user.BGame.AdminId);
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} обміняв біології {user.Name} та {user2.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -995,6 +1040,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         SwapCards(user.Id, user2.Id, "Health");
                         BUser admin = db.Users.Find(user.BGame.AdminId);
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} обміняв стнаи здоров'я {user.Name} та {user2.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -1016,6 +1065,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         SwapCards(user.Id, user2.Id, "Hobby");
                         BUser admin = db.Users.Find(user.BGame.AdminId);
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} обміняв хоббі {user.Name} та {user2.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -1037,6 +1090,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         SwapCards(user.Id, user2.Id, "11Luggage");
                         BUser admin = db.Users.Find(user.BGame.AdminId);
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} обміняв багажі {user.Name} та {user2.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -1058,6 +1115,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         SwapCards(user.Id, user2.Id, "12Luggage");
                         BUser admin = db.Users.Find(user.BGame.AdminId);
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} обміняв багажі {user.Name} та {user2.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -1079,6 +1140,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         SwapCards(user.Id, user2.Id, "21Luggage");
                         BUser admin = db.Users.Find(user.BGame.AdminId);
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} обміняв багажі {user.Name} та {user2.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -1100,6 +1165,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         SwapCards(user.Id, user2.Id, "AddInfo");
                         BUser admin = db.Users.Find(user.BGame.AdminId);
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} обміняв факти {user.Name} та {user2.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -1117,6 +1186,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapAllUsersCards(user.BGame.Id, "Profession");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} перемішав професії серед гравців у кого вони відкриті",
+                                   cancellationToken: cancellationToken);
                         MainMenu(user, botClient, cancellationToken);
                     }
                     break;
@@ -1134,6 +1207,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapAllUsersCards(user.BGame.Id, "Biology");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} перемішав біології серед гравців у кого вони відкриті",
+                                   cancellationToken: cancellationToken);
                         MainMenu(user, botClient, cancellationToken);
                     }
                     break;
@@ -1151,6 +1228,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapAllUsersCards(user.BGame.Id, "Health");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} перемішав стани здоров'я серед гравців у кого вони відкриті",
+                                   cancellationToken: cancellationToken);
                         MainMenu(user, botClient, cancellationToken);
                     }
                     break;
@@ -1168,6 +1249,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapAllUsersCards(user.BGame.Id, "Hobby");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} перемішав хоббі серед гравців у кого вони відкриті",
+                                   cancellationToken: cancellationToken);
                         MainMenu(user, botClient, cancellationToken);
                     }
                     break;
@@ -1185,6 +1270,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapAllUsersCards(user.BGame.Id, "Luggage");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} перемішав багажі серед гравців у кого вони відкриті",
+                                   cancellationToken: cancellationToken);
                         MainMenu(user, botClient, cancellationToken);
                     }
                     break;
@@ -1202,6 +1291,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         SwapAllUsersCards(user.BGame.Id, "AddInfo");
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} перемішав факти серед гравців у кого вони відкриті",
+                                   cancellationToken: cancellationToken);
                         MainMenu(user, botClient, cancellationToken);
                     }
                     break;
@@ -1242,6 +1335,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         StealLuggage(user.Id, user2.Id);
                         BUser admin = db.Users.Find(user.BGame.AdminId);
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"{admin.Name} викрав багаж {user.Name} для {user2.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -1274,7 +1371,12 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         catch { Console.WriteLine("Message not found to delete"); }
                         if (admin.BGame == null)
                             break;
+
                         GiveNewBunkerInfo(admin.BGame.Id, int.Parse(data[1]));
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: admin.BGame.GroupId,
+                                   text: $"{admin.Name} змінив {int.Parse(data[1])} характеристику бункера на нову:\n{admin.BGame.BunkerInfos[int.Parse(data[1])].Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -1318,6 +1420,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         admin.BGame.AdminId = newAdmin.Id;
                         db.SaveChanges();
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: admin.BGame.GroupId,
+                                   text: $"{admin.Name} передав роль ведучого гравцю {newAdmin.Name}",
+                                   cancellationToken: cancellationToken);
                         MainMenu(admin, botClient, cancellationToken);
                     }
                     break;
@@ -1377,6 +1483,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (admin.BGame == null)
                             break;
                         user.IsVoteDoubled = true;
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: admin.BGame.GroupId,
+                                   text: $"{admin.Name} подвоїв голос {user.Name}",
+                                   cancellationToken: cancellationToken);
                         db.SaveChanges();
                         VoteResults(admin.BGame.Id, botClient, cancellationToken);
                     }
@@ -1398,6 +1508,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (admin.BGame == null)
                             break;
                         user.IsVoteDoubled = false;
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: admin.BGame.GroupId,
+                                   text: $"{admin.Name} відмінив подвоєння голосу {user.Name}",
+                                   cancellationToken: cancellationToken);
                         db.SaveChanges();
                         VoteResults(admin.BGame.Id, botClient, cancellationToken);
                     }
@@ -1419,6 +1533,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (admin.BGame == null)
                             break;
                         user.VotedFor = null;
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: admin.BGame.GroupId,
+                                   text: $"{admin.Name} відмінив голос {user.Name}",
+                                   cancellationToken: cancellationToken);
                         db.SaveChanges();
                         VoteResults(admin.BGame.Id, botClient, cancellationToken);
                     }
@@ -1440,6 +1558,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (user.BGame == null)
                             break;
                         user.VotedFor = user2;
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: user.BGame.GroupId,
+                                   text: $"Голос {user.Name} змінено проти {user2.Name}",
+                                   cancellationToken: cancellationToken);
                         db.SaveChanges();
                         VoteResults(user.BGame.Id, botClient, cancellationToken);
                     }
@@ -1501,6 +1623,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         user.IsVoteDoubled = true;
                         db.SaveChanges();
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: admin.BGame.GroupId,
+                                   text: $"{admin.Name} подвоїв голос {user.Name}",
+                                   cancellationToken: cancellationToken);
                         VoteResultsMax(admin.BGame.Id, botClient, cancellationToken);
                     }
                     break;
@@ -1522,6 +1648,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         user.IsVoteDoubled = false;
                         db.SaveChanges();
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: admin.BGame.GroupId,
+                                   text: $"{admin.Name} відмінив подвоєння голосу {user.Name}",
+                                   cancellationToken: cancellationToken);
                         VoteResultsMax(admin.BGame.Id, botClient, cancellationToken);
                     }
                     break;
@@ -1543,6 +1673,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         user.VotedFor = null;
                         db.SaveChanges();
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                                   chatId: admin.BGame.GroupId,
+                                   text: $"{admin.Name} відмінив голос {user.Name}",
+                                   cancellationToken: cancellationToken);
                         VoteResultsMax(admin.BGame.Id, botClient, cancellationToken);
                     }
                     break;
@@ -1580,6 +1714,10 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                             break;
                         user.VotedFor = user2;
                         db.SaveChanges();
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                            chatId: user.BGame.GroupId,
+                            text: $"Голос {user.Name} змінено проти {user2.Name}",
+                            cancellationToken: cancellationToken);
                         VoteResultsMax(user.BGame.Id, botClient, cancellationToken);
                     }
                     break;
@@ -1597,7 +1735,12 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         if (admin.BGame == null)
                             break;
                         admin.BGame.ExileBunkerInfos.Add(admin.BGame.BunkerInfos[int.Parse(data[1])]);
+                        Message sMessage = await botClient.SendTextMessageAsync(
+                            chatId: admin.BGame.GroupId,
+                            text: $"{admin.Name} передав вигнанцям дану харкетристику бункера:\n{admin.BGame.BunkerInfos[int.Parse(data[1])]}",
+                            cancellationToken: cancellationToken);
                         admin.BGame.BunkerInfos.RemoveAt(int.Parse(data[1]));
+                        
                         db.SaveChanges();
                     }
                     break;
