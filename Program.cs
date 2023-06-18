@@ -39,7 +39,6 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
         Console.WriteLine(callback.Data);
         var chatId = callback.Message.Chat.Id;
         var c = regex.Match(callback.Data);
-        Console.WriteLine("tut blyat nachalo");
         Console.WriteLine(c.Groups[0].Value.ToString());
         if (c.Groups.Count == 3)
         {
@@ -1188,7 +1187,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         SwapAllUsersCards(user.BGame.Id, "Profession");
                         Message sMessage = await botClient.SendTextMessageAsync(
                                    chatId: user.BGame.GroupId,
-                                   text: $"{admin.Name} перемішав професії серед гравців у кого вони відкриті",
+                                   text: $"{user.Name} перемішав професії серед гравців у кого вони відкриті",
                                    cancellationToken: cancellationToken);
                         MainMenu(user, botClient, cancellationToken);
                     }
@@ -1209,7 +1208,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         SwapAllUsersCards(user.BGame.Id, "Biology");
                         Message sMessage = await botClient.SendTextMessageAsync(
                                    chatId: user.BGame.GroupId,
-                                   text: $"{admin.Name} перемішав біології серед гравців у кого вони відкриті",
+                                   text: $"{user.Name} перемішав біології серед гравців у кого вони відкриті",
                                    cancellationToken: cancellationToken);
                         MainMenu(user, botClient, cancellationToken);
                     }
@@ -1230,7 +1229,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         SwapAllUsersCards(user.BGame.Id, "Health");
                         Message sMessage = await botClient.SendTextMessageAsync(
                                    chatId: user.BGame.GroupId,
-                                   text: $"{admin.Name} перемішав стани здоров'я серед гравців у кого вони відкриті",
+                                   text: $"{user.Name} перемішав стани здоров'я серед гравців у кого вони відкриті",
                                    cancellationToken: cancellationToken);
                         MainMenu(user, botClient, cancellationToken);
                     }
@@ -1251,7 +1250,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         SwapAllUsersCards(user.BGame.Id, "Hobby");
                         Message sMessage = await botClient.SendTextMessageAsync(
                                    chatId: user.BGame.GroupId,
-                                   text: $"{admin.Name} перемішав хоббі серед гравців у кого вони відкриті",
+                                   text: $"{user.Name} перемішав хоббі серед гравців у кого вони відкриті",
                                    cancellationToken: cancellationToken);
                         MainMenu(user, botClient, cancellationToken);
                     }
@@ -1272,7 +1271,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         SwapAllUsersCards(user.BGame.Id, "Luggage");
                         Message sMessage = await botClient.SendTextMessageAsync(
                                    chatId: user.BGame.GroupId,
-                                   text: $"{admin.Name} перемішав багажі серед гравців у кого вони відкриті",
+                                   text: $"{user.Name} перемішав багажі серед гравців у кого вони відкриті",
                                    cancellationToken: cancellationToken);
                         MainMenu(user, botClient, cancellationToken);
                     }
@@ -1293,7 +1292,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         SwapAllUsersCards(user.BGame.Id, "AddInfo");
                         Message sMessage = await botClient.SendTextMessageAsync(
                                    chatId: user.BGame.GroupId,
-                                   text: $"{admin.Name} перемішав факти серед гравців у кого вони відкриті",
+                                   text: $"{user.Name} перемішав факти серед гравців у кого вони відкриті",
                                    cancellationToken: cancellationToken);
                         MainMenu(user, botClient, cancellationToken);
                     }
@@ -1737,7 +1736,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, Cancel
                         admin.BGame.ExileBunkerInfos.Add(admin.BGame.BunkerInfos[int.Parse(data[1])]);
                         Message sMessage = await botClient.SendTextMessageAsync(
                             chatId: admin.BGame.GroupId,
-                            text: $"{admin.Name} передав вигнанцям дану харкетристику бункера:\n{admin.BGame.BunkerInfos[int.Parse(data[1])]}",
+                            text: $"{admin.Name} передав вигнанцям дану харкетристику бункера:\n{admin.BGame.BunkerInfos[int.Parse(data[1])].Name}",
                             cancellationToken: cancellationToken);
                         admin.BGame.BunkerInfos.RemoveAt(int.Parse(data[1]));
                         
@@ -2130,8 +2129,9 @@ async void StopGame(long chatId, ITelegramBotClient botClient, CancellationToken
         return;
     }
 
-    foreach (BUser user in game.Users)
+    foreach (BUser user in game.Users.ToList())
     {
+        user.BGame = null;
         user.AdditionalInfoOpened = false;
         user.ProfessionOpened = false;
         user.BiologyOpened = false;
@@ -2467,7 +2467,7 @@ void GiveHazardExile(int gameId, ITelegramBotClient botClient, CancellationToken
                     return;
                 }
             }
-
+            EndGame(gameId, botClient, cancellationToken);
         }
     }
 }
@@ -2669,38 +2669,38 @@ async void MainMenu(BUser user, ITelegramBotClient botClient, CancellationToken 
     if (!user.ProfessionOpened)
     {
         ProfMarker = "🔓";
-        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
+        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status >= 6))
             keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити професію", $"{user.Id}.{sentMessage.MessageId}_openProfession") });
     }
     if (!user.BiologyOpened)
     {
 
         BioMarker = "🔓";
-        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
+        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status >= 6))
             keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити біологію", $"{user.Id}.{sentMessage.MessageId}_openBiology") });
     }
     if (!user.HealthConditionOpened)
     {
         HealthMarker = "🔓";
-        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
+        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status >= 6))
             keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити стан здоров'я", $"{user.Id}.{sentMessage.MessageId}_openHealth") });
     }
     if (!user.HobbyOpened)
     {
         HobbyMarker = "🔓";
-        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
+        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status >= 6))
             keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити хоббі", $"{user.Id}.{sentMessage.MessageId}_openHobby") });
     }
     if (!user.LuggagesOpened)
     {
         LugMarker = "🔓";
-        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
+        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status >= 6))
             keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити багаж", $"{user.Id}.{sentMessage.MessageId}_openLuggage") });
     }
     if (!user.AdditionalInfoOpened)
     {
         InfoMarker = "🔓";
-        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status == 6))
+        if ((user.BGame.SpeakerId == user.TelegramId || user.BGame.Status >= 6))
             keyboardButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("Розкрити факт", $"{user.Id}.{sentMessage.MessageId}_openAddInfo") });
     }
     if (!user.FirstSpecialCardUsed)
@@ -2770,6 +2770,7 @@ async void VoteResults(int gameId, ITelegramBotClient botClient, CancellationTok
     int maxCount = -1;
     List<BUser> max = new();
     int count = 0;
+    game.MaxVotesUsers.Clear();
     foreach (BUser u in game.Users)
     {
         text += $"За гравця {u.Name} проголосували: \n";
@@ -2997,10 +2998,12 @@ async void GiveSpeakingTime(BUser user, ITelegramBotClient botClient, Cancellati
           text: $"Починається час промови {user.Name}",
           cancellationToken: cancellationToken);
     user.BGame.SpeakerId = user.TelegramId;
+    db.SaveChanges();
     Message sentUserMessage = await botClient.SendTextMessageAsync(
           chatId: user.TelegramId,
           text: "Починається твій час промови.",
           cancellationToken: cancellationToken);
+    MainMenu(user, botClient, cancellationToken);
     BUser admin = db.Users.Find(user.BGame.AdminId);
     Message sentAdminMessage = await botClient.SendTextMessageAsync(
           chatId: admin.TelegramId,
@@ -3219,7 +3222,7 @@ async void OpenStat(BUser user, string type, ITelegramBotClient botClient, Cance
 {
     switch (type)
     {
-        case "Profesion":
+        case "Profession":
             {
                 user.ProfessionOpened = true;
                 Message sentMessage = await botClient.SendTextMessageAsync(
@@ -3520,6 +3523,11 @@ void SwapCards(int user1Id, int user2Id, string type)
         return;
     switch (type)
     {
+        case "Profession":
+            {
+                (user2.Profession, user1.Profession) = (user1.Profession, user2.Profession);
+            }
+            break;
         case "Biology":
             {
                 (user2.Biology, user1.Biology) = (user1.Biology, user2.Biology);
